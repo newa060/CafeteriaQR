@@ -35,30 +35,48 @@ export default async function middleware(req: NextRequest) {
   }
 
   // 2. Handle Login Pages
-  if (loginRoutes.some((r) => path === r || path.startsWith(r))) {
+  const normalizedPath = path.replace(/\/$/, "");
+  if (loginRoutes.some((r) => normalizedPath === r)) {
     let session = null;
-    for (const cookieName of Object.values(COOKIE_NAMES)) {
-      const cookie = req.cookies.get(cookieName)?.value;
+    let role = null;
+
+    // Check if the user has a session matching the panel they are trying to log into
+    const currentPanel = protectedPanels.find(p => normalizedPath.startsWith(p.prefix));
+    if (currentPanel) {
+      const cookie = req.cookies.get(currentPanel.cookieName)?.value;
       if (cookie) {
         session = await decrypt(cookie).catch(() => null);
-        if (session) break;
+        if (session) role = session.user.role;
       }
     }
 
-    if (session) {
-      const role = session.user.role as string;
-      
+    // If no specific panel session, look for ANY valid session (fallback)
+    if (!session) {
+      for (const cookieName of Object.values(COOKIE_NAMES)) {
+        const cookie = req.cookies.get(cookieName)?.value;
+        if (cookie) {
+          const decrypted = await decrypt(cookie).catch(() => null);
+          if (decrypted) {
+            session = decrypted;
+            role = session.user.role;
+            break;
+          }
+        }
+      }
+    }
+
+    if (session && role) {
       // If visiting generic /login, kick to their dashboard
-      if (path === "/login") {
+      if (normalizedPath === "/login") {
         if (role === "superadmin") return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
         if (role === "admin")      return NextResponse.redirect(new URL("/admin", req.nextUrl));
         return NextResponse.redirect(new URL("/customer", req.nextUrl));
       }
 
       // If visiting THEIR OWN login page, kick to their dashboard
-      if (path === "/superadmin/login" && role === "superadmin") return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
-      if (path === "/admin/login" && role === "admin") return NextResponse.redirect(new URL("/admin", req.nextUrl));
-      if (path === "/customer/login" && role === "customer") return NextResponse.redirect(new URL("/customer", req.nextUrl));
+      if (normalizedPath === "/superadmin/login" && role === "superadmin") return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
+      if (normalizedPath === "/admin/login" && role === "admin") return NextResponse.redirect(new URL("/admin", req.nextUrl));
+      if (normalizedPath === "/customer/login" && role === "customer") return NextResponse.redirect(new URL("/customer", req.nextUrl));
 
       // ALLOW visiting OTHER login pages (so they can switch accounts)
       return (await updateSession(req)) || NextResponse.next();

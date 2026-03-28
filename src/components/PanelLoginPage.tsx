@@ -66,7 +66,7 @@ const panelConfig: Record<PanelType, PanelConfig> = {
 
 function LoginForm({ panel }: { panel: PanelType }) {
   const config = panelConfig[panel];
-  const { login } = useAuth();
+  const { user, loading: authLoading, login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -75,6 +75,16 @@ function LoginForm({ panel }: { panel: PanelType }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  // Redirect if already logged in with the correct role
+  React.useEffect(() => {
+    if (!authLoading && user && user.role === panel) {
+      const timer = setTimeout(() => {
+        window.location.href = config.redirectTo;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [user, authLoading, panel, config.redirectTo]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
