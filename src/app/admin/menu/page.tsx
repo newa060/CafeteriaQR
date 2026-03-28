@@ -193,13 +193,13 @@ export default function MenuManagementPage() {
 
   return (
     <div className="space-y-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-white leading-none">Menu Management</h1>
-          <p className="text-gray-500 font-medium">Add, edit, or remove items from your cafeteria's menu.</p>
+          <h1 className="text-2xl sm:text-4xl font-black text-white leading-none">Menu Management</h1>
+          <p className="text-sm sm:text-base text-gray-500 font-medium mt-1">Add, edit, or remove items from your menu.</p>
         </div>
         <Button 
-          className="w-full md:w-auto h-14 px-8 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 flex justify-center items-center gap-3"
+          className="w-full sm:w-auto h-12 sm:h-14 px-8 rounded-2xl text-base sm:text-lg font-bold shadow-xl shadow-primary/20 flex justify-center items-center gap-3"
           onClick={() => handleOpenModal()}
         >
           <Plus className="w-5 h-5" />
@@ -207,12 +207,12 @@ export default function MenuManagementPage() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+      <div className="flex items-center gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/5">
         <Search className="w-5 h-5 text-gray-500" />
         <input 
           type="text" 
           placeholder="Search items or categories..." 
-          className="bg-transparent border-none outline-none text-white w-full text-lg placeholder:text-gray-600 font-medium"
+          className="bg-transparent border-none outline-none text-white w-full text-base sm:text-lg placeholder:text-gray-600 font-medium"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -245,10 +245,10 @@ export default function MenuManagementPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-black text-white leading-tight truncate">{item.name}</h3>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+                    <h3 className="text-lg sm:text-xl font-black text-white leading-tight truncate">{item.name}</h3>
+                    <p className="text-[11px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
                   </div>
-                  <span className="text-2xl font-black text-primary shrink-0">RS {item.price}</span>
+                  <span className="text-xl sm:text-2xl font-black text-primary shrink-0">RS {item.price}</span>
                 </div>
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -305,13 +305,13 @@ export default function MenuManagementPage() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-[#0d0d0d] border border-white/10 rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-[#0d0d0d] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
             >
-              <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-3xl font-black text-white">{editingItem ? "Edit Item" : "Add Item"}</h2>
-                  <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)}>
-                    <X className="w-6 h-6" />
+              <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
+                <div className="flex justify-between items-center mb-1">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">{editingItem ? "Edit Item" : "Add Item"}</h2>
+                  <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="w-8 h-8 p-0">
+                    <X className="w-5 h-5" />
                   </Button>
                 </div>
 
@@ -337,12 +337,12 @@ export default function MenuManagementPage() {
                     <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Brief description..." />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Image URL (Optional)</label>
-                    <Input value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.png (or use upload below)" />
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">Image URL (Optional)</label>
+                    <Input value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.png" className="h-10 text-sm" />
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 py-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 py-1">
                     <input 
                       type="file" 
                       accept="image/png, image/jpeg, image/jpg" 
@@ -354,29 +354,29 @@ export default function MenuManagementPage() {
                       type="button" 
                       onClick={() => imageInputRef.current?.click()}
                       disabled={uploadingImage}
-                      className={`flex-1 flex items-center justify-center gap-2 h-14 rounded-2xl border-2 border-dashed transition-all ${
+                      className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed transition-all ${
                         formData.imageUrl 
                           ? "bg-green-500/10 border-green-500/30 text-green-500" 
                           : "bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       {uploadingImage ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : formData.imageUrl ? (
-                        <Check className="w-5 h-5" />
+                        <Check className="w-4 h-4" />
                       ) : (
-                        <ImageIcon className="w-5 h-5" />
+                        <ImageIcon className="w-4 h-4" />
                       )}
-                      <span className="text-sm font-black">
-                        {uploadingImage ? "Uploading..." : formData.imageUrl ? "Image Ready" : "Upload Food Image"}
+                      <span className="text-xs font-bold">
+                        {uploadingImage ? "Uploading..." : formData.imageUrl ? "Image Ready" : "Upload Image"}
                       </span>
                     </button>
 
-                    <div className="flex items-center justify-between sm:justify-start gap-3 bg-white/5 border border-white/5 px-4 h-14 rounded-2xl w-full sm:w-auto">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Available</span>
+                    <div className="flex items-center justify-between sm:justify-start gap-3 bg-white/5 border border-white/5 px-3 h-11 rounded-xl w-full sm:w-auto">
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Available</span>
                       <input 
                         type="checkbox" 
-                        className="w-5 h-5 accent-primary"
+                        className="w-4 h-4 accent-primary"
                         checked={formData.isAvailable}
                         onChange={(e) => setFormData({...formData, isAvailable: e.target.checked})}
                       />
@@ -391,8 +391,8 @@ export default function MenuManagementPage() {
                   </div>
                 )}
 
-                <Button className="w-full h-14 text-xl font-black rounded-2xl shadow-xl shadow-primary/20" disabled={submitting}>
-                  {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : editingItem ? "Update Item" : "Create Item"}
+                <Button className="w-full h-12 text-sm font-bold rounded-xl shadow-xl shadow-primary/20" disabled={submitting}>
+                  {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : editingItem ? "Update Item" : "Create Item"}
                 </Button>
               </form>
             </motion.div>

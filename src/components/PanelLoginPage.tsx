@@ -202,14 +202,14 @@ function LoginForm({ panel }: { panel: PanelType }) {
               {config.icon}
             </div>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight text-white mb-2 leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2 leading-tight">
             {config.title}
           </h1>
-          <p className="text-gray-400">{config.subtitle}</p>
+          <p className="text-sm sm:text-base text-gray-400">{config.subtitle}</p>
         </div>
 
         <Card className="border-white/5 bg-black/40 backdrop-blur-xl shadow-2xl">
-          <CardContent className="pt-8 p-6 sm:p-8">
+          <CardContent className="pt-8 p-5 sm:p-8">
             <AnimatePresence mode="wait">
               {step === "info" && (
                 <motion.form
@@ -258,7 +258,7 @@ function LoginForm({ panel }: { panel: PanelType }) {
                 >
                   <div className="text-center space-y-2">
                     <p className="text-sm text-gray-400">Enter the 6-digit code sent to <span className="text-white font-medium">{email}</span></p>
-                    <div className="flex justify-between gap-2 mt-4">
+                    <div className="flex justify-between gap-1.5 sm:gap-2 mt-4">
                       {otp.map((data, index) => (
                         <input
                           key={index}
@@ -267,7 +267,7 @@ function LoginForm({ panel }: { panel: PanelType }) {
                           value={data}
                           onChange={(e) => handleOtpChange(e.target, index)}
                           onFocus={(e) => e.target.select()}
-                          className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-white/5 border border-white/10 rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none text-white transition-all"
+                          className="w-10 h-12 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold bg-white/5 border border-white/10 rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none text-white transition-all"
                         />
                       ))}
                     </div>
