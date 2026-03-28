@@ -13,12 +13,15 @@ import {
   Minus,
   LogOut,
   AlertCircle,
-  CircleUser
+  CircleUser,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge"; 
 import { useAuth } from "@/context/AuthContext";
+import { useNotification } from "@/context/NotificationContext";
+import { NotificationSheet } from "@/components/NotificationSheet";
 
 interface MenuItem {
   _id: string;
@@ -51,6 +54,8 @@ export default function CustomerMenuPage() {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const { unreadCount, markAllAsRead } = useNotification();
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -114,22 +119,37 @@ export default function CustomerMenuPage() {
     <div className="pb-24 max-w-lg mx-auto bg-background text-white min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold">Menu</h1>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="w-6 h-6" />
-          </Button>
-          <h1 className="text-xl font-bold">Menu</h1>
-        </div>
-        <div className="flex items-center">
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotificationsOpen(true)} 
+              className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
+              aria-label="Notifications"
+            >
+              <Bell className="w-6 h-6" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+              )}
+            </button>
+          </div>
           <button 
             onClick={() => router.push(`/customer/${adminId}/profile`)} 
-            className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
+            className="text-primary hover:bg-primary/10 p-1 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
             aria-label="Profile"
           >
-            <CircleUser className="w-10 h-10" />
+            <CircleUser className="w-8 h-8" />
           </button>
         </div>
       </header>
+
+      <NotificationSheet 
+        isOpen={isNotificationsOpen} 
+        onClose={() => {
+          setIsNotificationsOpen(false);
+          markAllAsRead();
+        }} 
+      />
 
 
       {/* Hero / Info */}

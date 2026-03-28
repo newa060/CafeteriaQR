@@ -10,26 +10,51 @@ interface Order {
   status: string;
 }
 
-interface Notification {
+interface NotificationItem {
   id: string;
   title: string;
   message: string;
   type: "success" | "info" | "warning";
+  timestamp: string;
+  isRead: boolean;
 }
 
 interface NotificationContextType {
-  showNotification: (notif: Omit<Notification, "id">) => void;
+  showNotification: (notif: Omit<NotificationItem, "id" | "timestamp" | "isRead">) => void;
+  notifications: NotificationItem[];
+  unreadCount: number;
+  markAllAsRead: () => void;
+  clearNotifications: () => void;
+  removeNotification: (id: string) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [activeNotifications, setActiveNotifications] = useState<Notification[]>([]);
+  const [activeNotifications, setActiveNotifications] = useState<NotificationItem[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  
   // Use a ref so the polling callback always has the latest statuses without stale closure issues
-  const lastStatuses = useRef<Record<string, string>>({});
   const isBaselineSet = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Load notifications from local storage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("customer_notifications");
+    if (saved) {
+      try {
+        setNotifications(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse notifications", e);
+      }
+    }
+  }, []);
+
+  // Save notifications to local storage whenever they change
+  useEffect(() => {
+    localStorage.setItem("customer_notifications", JSON.stringify(notifications));
+  }, [notifications]);
 
   // Preload sound once
   useEffect(() => {
@@ -51,9 +76,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   // Stable showNotification using functional state update — no stale closure
-  const showNotification = useCallback((notif: Omit<Notification, "id">) => {
+  const showNotification = useCallback((notif: Omit<NotificationItem, "id" | "timestamp" | "isRead">) => {
     const id = Math.random().toString(36).substr(2, 9);
-    setActiveNotifications(prev => [...prev, { ...notif, id }]);
+    const newNotif: NotificationItem = {
+      ...notif,
+      id,
+      timestamp: new Date().toISOString(),
+      isRead: false
+    };
+    
+    setActiveNotifications(prev => [...prev, newNotif]);
+    setNotifications(prev => [newNotif, ...prev]);
+    
     playSound();
     setTimeout(() => dismiss(id), 5000);
   }, [playSound, dismiss]);
@@ -68,8 +102,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     if (!user || user.role !== "customer") return;
 
-    // Reset baseline when user changes
-    lastStatuses.current = {};
+    // Reset loop baseline when user changes
     isBaselineSet.current = false;
 
     const pollOrders = async () => {
@@ -83,30 +116,32 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const orders: Order[] = await res.json();
 
         if (!isBaselineSet.current) {
-          // First run: set baseline, do NOT fire notifications for existing states
-          orders.forEach(order => {
-            lastStatuses.current[order._id] = order.status;
-          });
+          // First run: just set the baseline
           isBaselineSet.current = true;
           return;
         }
 
-        // Subsequent runs: detect transitions
-        orders.forEach(order => {
-          const prev = lastStatuses.current[order._id];
-          const curr = order.status;
+        // Subsequent runs: detect new "Accepted" statuses
+        const notifiedAccepted = JSON.parse(localStorage.getItem("notified_accepted_orders") || "[]");
+        const newNotified = [...notifiedAccepted];
+        let hasNew = false;
 
-          if (prev === "pending" && curr === "accepted") {
+        orders.forEach(order => {
+          if (order.status === "accepted" && !notifiedAccepted.includes(order._id)) {
             showNotificationRef.current({
               title: "Order Accepted!",
               message: "Your order has been accepted.",
               type: "success",
             });
+            newNotified.push(order._id);
+            hasNew = true;
           }
-
-          // Always update the tracked status
-          lastStatuses.current[order._id] = curr;
         });
+
+        if (hasNew) {
+          // Store last 50 notified order IDs to keep localStorage clean
+          localStorage.setItem("notified_accepted_orders", JSON.stringify(newNotified.slice(-50)));
+        }
       } catch {
         // Silent fail — background polling
       }
@@ -118,8 +153,29 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => clearInterval(interval);
   }, [user]);
 
+  const markAllAsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+  }, []);
+
+  const clearNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   return (
-    <NotificationContext.Provider value={{ showNotification }}>
+    <NotificationContext.Provider value={{ 
+      showNotification, 
+      notifications, 
+      unreadCount, 
+      markAllAsRead, 
+      clearNotifications,
+      removeNotification
+    }}>
       {children}
 
       {/* Fixed Toast Stack */}

@@ -11,11 +11,14 @@ import {
   Package, 
   Timer, 
   UtensilsCrossed, 
-  CheckCheck
+  CheckCheck,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { useNotification } from "@/context/NotificationContext";
+import { NotificationSheet } from "@/components/NotificationSheet";
 
 interface Order {
   _id: string;
@@ -43,6 +46,8 @@ export default function OrderTrackPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const previousStatus = useRef<string | null>(null);
+  const { unreadCount, markAllAsRead } = useNotification();
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   // Synthesized notification sound (avoids external asset blocking)
   const playNotificationSound = (type: "success" | "error") => {
@@ -146,8 +151,29 @@ export default function OrderTrackPage() {
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <h1 className="text-xl font-bold">Track Order</h1>
-        <div className="w-10" />
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotificationsOpen(true)} 
+              className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
+              aria-label="Notifications"
+            >
+              <Bell className="w-6 h-6" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+              )}
+            </button>
+          </div>
+        </div>
       </header>
+
+      <NotificationSheet 
+        isOpen={isNotificationsOpen} 
+        onClose={() => {
+          setIsNotificationsOpen(false);
+          markAllAsRead();
+        }} 
+      />
 
       <div className="p-4 space-y-6">
         {/* Status Card */}

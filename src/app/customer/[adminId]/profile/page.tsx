@@ -18,13 +18,16 @@ import {
   Mail,
   User as UserIcon,
   GraduationCap,
-  Trash2
+  Trash2,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
+import { useNotification } from "@/context/NotificationContext";
+import { NotificationSheet } from "@/components/NotificationSheet";
 
 interface OrderItem {
   name: string;
@@ -57,6 +60,9 @@ export default function CustomerProfilePage() {
   const [error, setError] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { unreadCount, markAllAsRead } = useNotification();
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -168,44 +174,68 @@ export default function CustomerProfilePage() {
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <h1 className="text-xl font-bold">Profile</h1>
-        <Button variant="ghost" size="icon" onClick={logout} className="text-red-500 hover:bg-red-500/10">
-          <LogOut className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotificationsOpen(true)} 
+              className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
+              aria-label="Notifications"
+            >
+              <Bell className="w-6 h-6" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+              )}
+            </button>
+          </div>
+          <Button variant="ghost" size="icon" onClick={logout} className="text-red-500 hover:bg-red-500/10">
+            <LogOut className="w-5 h-5" />
+          </Button>
+        </div>
       </header>
 
+      <NotificationSheet 
+        isOpen={isNotificationsOpen} 
+        onClose={() => {
+          setIsNotificationsOpen(false);
+          markAllAsRead();
+        }} 
+      />
+
       <div className="max-w-lg mx-auto p-4 space-y-8">
-        {/* User Card */}
-        <section className="relative">
-          <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
-          <Card className="bg-black/40 border-white/5 shadow-2xl overflow-hidden backdrop-blur-sm">
-            <CardContent className="p-8">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="relative group">
-                  <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-primary to-orange-400 p-1">
-                    <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                      <CircleUser className="w-16 h-16 text-primary/50" />
+        {/* User Card - FIXED/STICKY */}
+        <section className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-md pt-2 pb-6 -mx-4 px-4 border-b border-white/5 shadow-xl">
+          <div className="relative">
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
+            <Card className="bg-black/40 border-white/5 shadow-2xl overflow-hidden backdrop-blur-sm rounded-[2rem]">
+              <CardContent className="p-6">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="relative group">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary to-orange-400 p-1">
+                      <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden border-2 border-zinc-950">
+                        <CircleUser className="w-14 h-14 text-primary/50" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h2 className="text-2xl font-black tracking-tight leading-none">{user?.name}</h2>
+                    <p className="text-xs text-gray-500 font-medium">{user?.email}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 w-full pt-1">
+                    <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
+                      <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1">Orders</p>
+                      <p className="text-lg font-black text-white">{orders.length}</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
+                      <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1">Faculty</p>
+                      <p className="text-lg font-black text-white truncate">{user?.faculty || "N/A"}</p>
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-1">
-                  <h2 className="text-2xl font-black tracking-tight">{user?.name}</h2>
-                  <p className="text-sm text-gray-500 font-medium">{user?.email}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 w-full pt-4">
-                  <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Total Orders</p>
-                    <p className="text-xl font-black text-white">{orders.length}</p>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Faculty</p>
-                    <p className="text-xl font-black text-white truncate">{user?.faculty || "N/A"}</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* Profile Settings */}
@@ -293,9 +323,21 @@ export default function CustomerProfilePage() {
 
         {/* Order History */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <History className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-bold">Order History</h3>
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <History className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-bold">Recent Orders</h3>
+            </div>
+            {orders.length > 3 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowAllHistory(true)}
+                className="text-xs font-bold text-primary hover:bg-primary/10"
+              >
+                See All
+              </Button>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -306,7 +348,7 @@ export default function CustomerProfilePage() {
               </div>
             ) : orders.length > 0 ? (
               <div className="space-y-4 flex flex-col items-stretch">
-                {orders.map((order, idx) => (
+                {orders.slice(0, 3).map((order, idx) => (
                   <motion.div
                     key={order._id}
                     initial={{ opacity: 0, x: -20 }}
@@ -315,36 +357,35 @@ export default function CustomerProfilePage() {
                   >
                     <Card className="bg-white/5 border-white/5 hover:border-white/10 transition-colors shadow-lg group overflow-hidden">
                       <div className="flex items-stretch min-h-[100px]">
-                        <div className={`w-1.5 ${
+                        <div className={`w-1 ${
                           order.status === 'completed' ? 'bg-green-500' : 
                           order.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
                         }`} />
-                        <div className="flex-1 p-5">
-                          <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1 p-4">
+                          <div className="flex justify-between items-start mb-2">
                             <div className="space-y-0.5">
-                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">
+                              <p className="text-[8px] font-black text-gray-500 uppercase tracking-tighter">
                                 {new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
-                              <h4 className="font-bold text-white flex items-center gap-2">
+                              <h4 className="font-bold text-sm text-white flex items-center gap-2">
                                 Slot: {order.timeSlot}
-                                <Badge className={`h-5 px-2 text-[8px] font-black uppercase ${getStatusColor(order.status)}`}>
-                                  {getStatusIcon(order.status)}
-                                  <span className="ml-1">{order.status}</span>
+                                <Badge className={`h-4 px-1.5 text-[7px] font-black uppercase ${getStatusColor(order.status)} border-none`}>
+                                  {order.status}
                                 </Badge>
                               </h4>
                             </div>
-                            <p className="text-lg font-black text-primary">RS {order.totalAmount}</p>
+                            <p className="text-md font-black text-primary">RS {order.totalAmount}</p>
                           </div>
                           
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1.5">
                             {order.items.map((item, i) => (
-                              <span key={i} className="text-[10px] bg-white/5 border border-white/5 px-2 py-1 rounded-md text-gray-400 font-medium">
+                              <span key={i} className="text-[9px] bg-white/5 border border-white/5 px-1.5 py-0.5 rounded text-gray-400 font-medium">
                                 {item.quantity}x {item.name}
                               </span>
                             ))}
                           </div>
                         </div>
-                        <div className="flex items-center justify-center px-4">
+                        <div className="flex items-center justify-center px-2">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -352,10 +393,9 @@ export default function CustomerProfilePage() {
                               e.stopPropagation();
                               handleDeleteOrder(order._id);
                             }}
-                            className="text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                            title="Remove from history"
+                            className="w-8 h-8 text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                           >
-                            <Trash2 className="w-5 h-5" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -385,8 +425,99 @@ export default function CustomerProfilePage() {
       </div>
 
       <AnimatePresence>
+        {showAllHistory && (
+          <motion.div
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[120] bg-background overflow-hidden flex flex-col"
+          >
+            {/* Full History Header */}
+            <header className="p-4 border-b border-white/5 flex items-center justify-between bg-background/80 backdrop-blur-xl">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" onClick={() => setShowAllHistory(false)}>
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+                <h2 className="text-xl font-bold">Complete History</h2>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-white/10">
+                {orders.length} Total
+              </Badge>
+            </header>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
+              {orders.map((order, idx) => (
+                <motion.div
+                  key={order._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <Card className="bg-white/5 border-white/5 shadow-xl overflow-hidden">
+                    <div className="flex items-stretch min-h-[110px]">
+                      <div className={`w-1.5 ${
+                        order.status === 'completed' ? 'bg-green-500' : 
+                        order.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
+                      }`} />
+                      <div className="flex-1 p-5">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                              {new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                            <div className="flex items-center gap-3">
+                              <h4 className="text-lg font-black text-white">Slot {order.timeSlot}</h4>
+                              <Badge className={`px-2 py-0.5 text-[9px] font-black uppercase ${getStatusColor(order.status)}`}>
+                                {order.status}
+                              </Badge>
+                            </div>
+                          </div>
+                          <p className="text-2xl font-black text-primary">RS {order.totalAmount}</p>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {order.items.map((item, i) => (
+                            <div key={i} className="bg-white/5 border border-white/5 px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-2">
+                              <span className="text-primary font-black">{item.quantity}x</span>
+                              <span className="text-gray-300 font-bold">{item.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center px-4">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteOrder(order._id);
+                          }}
+                          className="w-10 h-10 text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 bg-zinc-950 border-t border-white/5 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">
+                End of History
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {deleteConfirmId && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

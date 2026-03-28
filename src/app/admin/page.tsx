@@ -65,8 +65,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchOrders();
-    // Refresh for "Real-time" updates every 15 seconds
-    const interval = setInterval(fetchOrders, 15000);
+    // Refresh for "Real-time" updates every 8 seconds
+    const interval = setInterval(fetchOrders, 8000);
     return () => clearInterval(interval);
   }, []);
 
@@ -110,7 +110,13 @@ export default function AdminDashboard() {
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-2 leading-none">Canteen Dashboard</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-none">Canteen Dashboard</h1>
+            <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-full animate-pulse self-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Live</span>
+            </div>
+          </div>
           <p className="text-gray-500 font-medium">Manage live orders and see what to cook.</p>
         </div>
         
