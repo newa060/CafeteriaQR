@@ -48,7 +48,7 @@ export async function PATCH(req: Request) {
     if (body.faculty !== undefined) updates.faculty = body.faculty;
 
     const updatedUser = await User.findByIdAndUpdate(
-      session.user.id || session.user._id,
+      session.user.id,
       { $set: updates },
       { new: true }
     ).select("-password -__v");
