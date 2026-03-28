@@ -6,7 +6,7 @@ const secretKey = "secret";
 const key = new TextEncoder().encode(process.env.JWT_SECRET || secretKey);
 
 type EncryptPayload = Record<string, unknown>;
-type SessionPayload = { user: { id: string; email: string; name: string; role: string; cafeteriaId?: string; faculty?: string }; expires: Date };
+type SessionPayload = { user: { id: string; _id?: string; email: string; name: string; role: string; cafeteriaId?: string; faculty?: string }; expires: Date };
 type LoginUser = { _id?: { toString(): string }; id?: string; email: string; name: string; role: string; cafeteriaId?: { toString(): string }; faculty?: string };
 
 export async function encrypt(payload: EncryptPayload) {
