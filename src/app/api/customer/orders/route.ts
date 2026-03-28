@@ -73,7 +73,7 @@ export async function GET() {
     }).sort({ createdAt: -1 });
 
     // Live filtering in JS to be 100% sure we catch the hiddenFromCustomer flag
-    const orders = allOrders.filter((o: any) => {
+    const orders = allOrders.filter((o: { toObject?: () => Record<string, unknown>; hiddenFromCustomer?: boolean }) => {
       // Handle both Mongoose document and plain object
       const doc = o.toObject ? o.toObject() : o;
       return doc.hiddenFromCustomer !== true;

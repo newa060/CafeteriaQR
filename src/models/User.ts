@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 
 const UserSchema = new Schema({
   name: {
@@ -19,7 +19,7 @@ const UserSchema = new Schema({
   cafeteriaId: {
     type: Schema.Types.ObjectId,
     ref: 'Cafeteria',
-    required: function(this: any) {
+    required: function(this: { role: string }) {
       return this.role === 'admin';
     },
   },

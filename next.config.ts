@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  eslint: {
+    // ESLint is run separately in CI — don't block the production build
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
