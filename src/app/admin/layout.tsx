@@ -83,8 +83,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 rounded-xl transition-colors group"
               onClick={() => setIsSidebarOpen(false)}
             >
-              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center group-hover:border-primary/50 transition-colors">
-                <span className="text-primary font-bold">{user?.name?.charAt(0) || "A"}</span>
+              <div className="w-14 h-14 rounded-full bg-primary/20 border-2 border-primary/20 flex items-center justify-center group-hover:border-primary/50 transition-all shadow-lg shrink-0">
+                <span className="text-primary text-lg font-black">{user?.name?.charAt(0) || "A"}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{user?.name || "Admin User"}</p>

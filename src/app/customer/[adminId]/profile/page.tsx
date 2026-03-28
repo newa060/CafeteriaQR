@@ -1,0 +1,452 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  ArrowLeft, 
+  CircleUser, 
+  History, 
+  Settings, 
+  LogOut, 
+  CheckCircle2, 
+  Clock, 
+  XCircle,
+  AlertCircle,
+  Loader2,
+  Save,
+  Mail,
+  User as UserIcon,
+  GraduationCap,
+  Trash2
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
+import { useAuth } from "@/context/AuthContext";
+
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  _id: string;
+  items: OrderItem[];
+  totalAmount: number;
+  timeSlot: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
+export default function CustomerProfilePage() {
+  const params = useParams();
+  const router = useRouter();
+  const adminId = params.adminId as string;
+  const { user, logout, refreshUser } = useAuth();
+
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(user?.name || "");
+  const [faculty, setFaculty] = useState(user?.faculty || "");
+  const [updating, setUpdating] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name);
+      setFaculty(user.faculty || "");
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`/api/customer/orders?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  const handleUpdateProfile = async () => {
+    setUpdating(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "x-panel-context": "customer"
+        },
+        body: JSON.stringify({ name, faculty }),
+      });
+
+      if (res.ok) {
+        await refreshUser();
+        setMessage("Profile updated successfully!");
+        setIsEditing(false);
+        setTimeout(() => setMessage(""), 3000);
+      } else {
+        setError("Failed to update profile");
+      }
+    } catch (err) {
+      setError("Something went wrong");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'text-green-500 bg-green-500/10 border-green-500/20';
+      case 'pending': return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+      case 'cancelled': return 'text-red-500 bg-red-500/10 border-red-500/20';
+      default: return 'text-gray-500 bg-gray-500/10 border-gray-500/20';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle2 className="w-4 h-4" />;
+      case 'pending': return <Clock className="w-4 h-4" />;
+      case 'cancelled': return <XCircle className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
+    }
+  };
+  const handleDeleteOrder = (orderId: string) => {
+    setDeleteConfirmId(orderId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    
+    setIsDeleting(true);
+    setError("");
+
+    try {
+      const res = await fetch(`/api/customer/orders/${deleteConfirmId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setOrders(prev => prev.filter(order => order._id !== deleteConfirmId));
+        setDeleteConfirmId(null);
+        setMessage("Order removed from history");
+        setTimeout(() => setMessage(""), 3000);
+      } else {
+        setError("Failed to remove history entry");
+      }
+    } catch (err) {
+      setError("Something went wrong");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-white pb-10">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="w-6 h-6" />
+        </Button>
+        <h1 className="text-xl font-bold">Profile</h1>
+        <Button variant="ghost" size="icon" onClick={logout} className="text-red-500 hover:bg-red-500/10">
+          <LogOut className="w-5 h-5" />
+        </Button>
+      </header>
+
+      <div className="max-w-lg mx-auto p-4 space-y-8">
+        {/* User Card */}
+        <section className="relative">
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
+          <Card className="bg-black/40 border-white/5 shadow-2xl overflow-hidden backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="relative group">
+                  <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-primary to-orange-400 p-1">
+                    <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                      <CircleUser className="w-16 h-16 text-primary/50" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black tracking-tight">{user?.name}</h2>
+                  <p className="text-sm text-gray-500 font-medium">{user?.email}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 w-full pt-4">
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Total Orders</p>
+                    <p className="text-xl font-black text-white">{orders.length}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Faculty</p>
+                    <p className="text-xl font-black text-white truncate">{user?.faculty || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Profile Settings */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-bold">Personal Details</h3>
+            </div>
+            {!isEditing && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsEditing(true)}
+                className="text-xs font-bold text-primary hover:bg-primary/10"
+              >
+                Edit Profile
+              </Button>
+            )}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {isEditing ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <Card className="bg-[#111111] border-white/5 p-6 shadow-xl">
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pl-1">
+                        <UserIcon className="w-3 h-3" /> Full Name
+                      </label>
+                      <Input 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)} 
+                        className="h-12 bg-white/5 border-white/10 rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pl-1">
+                        <GraduationCap className="w-3 h-3" /> Faculty
+                      </label>
+                      <Input 
+                        value={faculty} 
+                        onChange={(e) => setFaculty(e.target.value)} 
+                        placeholder="e.g. Science, Arts"
+                        className="h-12 bg-white/5 border-white/10 rounded-xl"
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => setIsEditing(false)}
+                        className="flex-1 h-12 rounded-xl text-gray-400 font-bold"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleUpdateProfile}
+                        disabled={updating}
+                        className="flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/20"
+                      >
+                        {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
+          {message && (
+            <div className="bg-green-500/10 border border-green-500/20 text-green-500 text-xs p-3 rounded-xl flex items-center gap-2 animate-in fade-in zoom-in-95">
+              <CheckCircle2 className="w-4 h-4" /> {message}
+            </div>
+          )}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-xl flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" /> {error}
+            </div>
+          )}
+        </section>
+
+        {/* Order History */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <History className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-bold">Order History</h3>
+          </div>
+
+          <div className="space-y-4">
+            {loadingOrders ? (
+              <div className="flex flex-col items-center justify-center py-20 opacity-30">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+                <p className="text-xs font-bold uppercase tracking-widest">Loading History...</p>
+              </div>
+            ) : orders.length > 0 ? (
+              <div className="space-y-4 flex flex-col items-stretch">
+                {orders.map((order, idx) => (
+                  <motion.div
+                    key={order._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <Card className="bg-white/5 border-white/5 hover:border-white/10 transition-colors shadow-lg group overflow-hidden">
+                      <div className="flex items-stretch min-h-[100px]">
+                        <div className={`w-1.5 ${
+                          order.status === 'completed' ? 'bg-green-500' : 
+                          order.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
+                        }`} />
+                        <div className="flex-1 p-5">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="space-y-0.5">
+                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">
+                                {new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </p>
+                              <h4 className="font-bold text-white flex items-center gap-2">
+                                Slot: {order.timeSlot}
+                                <Badge className={`h-5 px-2 text-[8px] font-black uppercase ${getStatusColor(order.status)}`}>
+                                  {getStatusIcon(order.status)}
+                                  <span className="ml-1">{order.status}</span>
+                                </Badge>
+                              </h4>
+                            </div>
+                            <p className="text-lg font-black text-primary">RS {order.totalAmount}</p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            {order.items.map((item, i) => (
+                              <span key={i} className="text-[10px] bg-white/5 border border-white/5 px-2 py-1 rounded-md text-gray-400 font-medium">
+                                {item.quantity}x {item.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center px-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteOrder(order._id);
+                            }}
+                            className="text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                            title="Remove from history"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-20 text-center space-y-4 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                <History className="w-10 h-10 text-gray-700 mx-auto" />
+                <div className="space-y-1">
+                  <p className="text-gray-500 font-bold">No orders found yet.</p>
+                  <p className="text-[10px] text-gray-600 uppercase tracking-widest">Your future delicious meals will appear here!</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => router.push(`/customer/${adminId}/menu`)}
+                  className="rounded-xl border-white/10 bg-white/5 font-bold"
+                >
+                  Browse Menu
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <AnimatePresence>
+        {deleteConfirmId && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteConfirmId(null)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-2xl"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1, 
+                y: 0,
+                transition: { type: "spring", damping: 15, stiffness: 300 }
+              }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-sm bg-zinc-950/70 border border-white/10 rounded-[2.5rem] p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-3xl overflow-hidden"
+            >
+              {/* Subtle top light effect */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              <div className="text-center space-y-6 relative z-10">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center mx-auto shadow-xl shadow-red-500/20 rotate-3">
+                  <Trash2 className="w-10 h-10 text-white" />
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-white tracking-tight">Delete Order?</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed px-2">
+                    Are you sure you want to remove this order from your history? 
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3 pt-2">
+                  <Button
+                    className="w-full h-14 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black text-lg shadow-xl shadow-red-500/30 active:scale-95 transition-all"
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "Yes, Delete It"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full h-12 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 font-bold transition-colors"
+                    onClick={() => setDeleteConfirmId(null)}
+                    disabled={isDeleting}
+                  >
+                    Not now
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <div className="py-12 flex flex-col items-center justify-center opacity-30">
+        <div className="h-px w-24 bg-white/10 mb-4" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
+      </div>
+    </div>
+  );
+}

@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   UtensilsCrossed,
   User,
+  GraduationCap,
+  Hash
 } from "lucide-react";
 
 type PanelType = "customer" | "admin" | "superadmin";
@@ -24,6 +26,7 @@ interface PanelConfig {
   title: React.ReactNode;
   subtitle: string;
   showNameField: boolean;
+  showFacultyField: boolean;
   redirectTo: string;
 }
 
@@ -38,6 +41,7 @@ const panelConfig: Record<PanelType, PanelConfig> = {
     ),
     subtitle: "Enter your details to continue",
     showNameField: true,
+    showFacultyField: true,
     redirectTo: "/customer",
   },
   admin: {
@@ -49,6 +53,7 @@ const panelConfig: Record<PanelType, PanelConfig> = {
     ),
     subtitle: "Sign in to the management portal",
     showNameField: false,
+    showFacultyField: false,
     redirectTo: "/admin",
   },
   superadmin: {
@@ -60,6 +65,7 @@ const panelConfig: Record<PanelType, PanelConfig> = {
     ),
     subtitle: "Root access — authorised personnel only",
     showNameField: false,
+    showFacultyField: false,
     redirectTo: "/superadmin",
   },
 };
@@ -70,8 +76,10 @@ function LoginForm({ panel }: { panel: PanelType }) {
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [faculty, setFaculty] = useState("");
+  const [canteenCode, setCanteenCode] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [step, setStep] = useState<"info" | "otp">("info");
+  const [step, setStep] = useState<"info" | "otp" | "register">("info");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -125,11 +133,16 @@ function LoginForm({ panel }: { panel: PanelType }) {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: otpString, name, loginPanel: panel }),
+        body: JSON.stringify({ email, otp: otpString, name, faculty, loginPanel: panel }),
       });
       if (res.ok) {
         const data = await res.json();
-        login(data.user, config.redirectTo);
+        if (panel === "customer" && !data.userExist) {
+          setStep("register");
+          setMessage("Identification successful! Please complete your profile.");
+        } else {
+          login(data.user, config.redirectTo);
+        }
       } else {
         const data = await res.json();
         setError(data.error || "Invalid or expired OTP");
@@ -146,6 +159,32 @@ function LoginForm({ panel }: { panel: PanelType }) {
     setOtp([...otp.map((d, idx) => (idx === index ? element.value : d))]);
     if (element.nextSibling && element.value !== "") {
       (element.nextSibling as HTMLInputElement).focus();
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/auth/register-customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, faculty, canteenCode }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        login(data.user, config.redirectTo);
+      } else {
+        const data = await res.json();
+        setError(data.error || "Registration failed");
+      }
+    } catch {
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -172,7 +211,7 @@ function LoginForm({ panel }: { panel: PanelType }) {
         <Card className="border-white/5 bg-black/40 backdrop-blur-xl shadow-2xl">
           <CardContent className="pt-8 p-6 sm:p-8">
             <AnimatePresence mode="wait">
-              {step === "info" ? (
+              {step === "info" && (
                 <motion.form
                   key="info"
                   initial={{ opacity: 0, x: -20 }}
@@ -182,19 +221,6 @@ function LoginForm({ panel }: { panel: PanelType }) {
                   className="space-y-6"
                 >
                   <div className="space-y-4">
-                    {config.showNameField && (
-                      <div className="relative group">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary transition-colors" />
-                        <Input
-                          type="text"
-                          placeholder="Full Name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="pl-12"
-                          required
-                        />
-                      </div>
-                    )}
                     <div className="relative group">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                       <Input
@@ -219,7 +245,9 @@ function LoginForm({ panel }: { panel: PanelType }) {
                     {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Get OTP Code"}
                   </Button>
                 </motion.form>
-              ) : (
+              )}
+
+              {step === "otp" && (
                 <motion.form
                   key="otp"
                   initial={{ opacity: 0, x: 20 }}
@@ -270,6 +298,69 @@ function LoginForm({ panel }: { panel: PanelType }) {
                       Change email or Resend OTP?
                     </button>
                   </div>
+                </motion.form>
+              )}
+
+              {step === "register" && (
+                <motion.form
+                  key="register"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  onSubmit={handleRegister}
+                  className="space-y-6"
+                >
+                  <div className="text-center mb-4">
+                    <h3 className="text-lg font-bold text-white">Complete Your Profile</h3>
+                    <p className="text-xs text-gray-400">Finish setting up your account</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="relative group">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary transition-colors" />
+                      <Input
+                        type="text"
+                        placeholder="Full Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="pl-12"
+                        required
+                      />
+                    </div>
+                    <div className="relative group">
+                      <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary transition-colors" />
+                      <Input
+                        type="text"
+                        placeholder="Faculty"
+                        value={faculty}
+                        onChange={(e) => setFaculty(e.target.value)}
+                        className="pl-12"
+                        required
+                      />
+                    </div>
+                    <div className="relative group">
+                      <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary transition-colors" />
+                      <Input
+                        type="text"
+                        placeholder="Canteen Code"
+                        value={canteenCode}
+                        onChange={(e) => setCanteenCode(e.target.value)}
+                        className="pl-12 uppercase"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="flex items-center gap-2 text-red-500 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {error}
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full h-14 text-lg font-bold shadow-xl shadow-primary/20" disabled={loading}>
+                    {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Complete Registration"}
+                  </Button>
                 </motion.form>
               )}
             </AnimatePresence>

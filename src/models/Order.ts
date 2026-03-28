@@ -55,6 +55,10 @@ const OrderSchema = new Schema({
   paymentName: {
     type: String,
   },
+  hiddenFromCustomer: {
+    type: Boolean,
+    default: false,
+  },
 }, { timestamps: true });
 
 export default models.Order || model('Order', OrderSchema);

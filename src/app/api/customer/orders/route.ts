@@ -3,6 +3,9 @@ import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
 import { getSession } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(req: Request) {
   const session = await getSession("customer");
   if (!session || session.user.role !== "customer") {
@@ -63,8 +66,24 @@ export async function GET() {
 
   try {
     await dbConnect();
-    const orders = await Order.find({ customerId: session.user._id }).sort({ createdAt: -1 });
-    return NextResponse.json(orders);
+    const mongoose = (await import("mongoose")).default;
+    // Bypassing find filter for $ne: true in case of model schema cache issues
+    const allOrders = await Order.find({ 
+      customerId: new mongoose.Types.ObjectId(session.user.id)
+    }).sort({ createdAt: -1 });
+
+    // Live filtering in JS to be 100% sure we catch the hiddenFromCustomer flag
+    const orders = allOrders.filter((o: any) => {
+      // Handle both Mongoose document and plain object
+      const doc = o.toObject ? o.toObject() : o;
+      return doc.hiddenFromCustomer !== true;
+    });
+
+    return NextResponse.json(orders, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0'
+      }
+    });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }

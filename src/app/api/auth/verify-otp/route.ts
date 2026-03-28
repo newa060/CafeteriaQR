@@ -7,7 +7,7 @@ import { login } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const { email, otp, name, loginPanel } = await req.json();
+    const { email, otp, name, faculty, loginPanel } = await req.json();
 
     if (!email || !otp) {
       return NextResponse.json({ error: "Email and OTP are required" }, { status: 400 });
@@ -54,7 +54,6 @@ export async function POST(req: Request) {
       }
     } else if (loginPanel === "customer") {
       // Customer Panel: Reject if they are actually an admin or superadmin
-      // They MUST use their own designated management portals
       if (user && user.role !== "customer") {
         return NextResponse.json({ 
           error: `This account is registered as ${user.role}. Please use the ${user.role} dashboard to sign in.` 
@@ -62,19 +61,23 @@ export async function POST(req: Request) {
       }
 
       if (!user) {
-        if (!name) {
-          return NextResponse.json({ error: "Name is required for new users" }, { status: 400 });
-        }
-        user = await User.create({ name, email, role: "customer" });
+        // Return a flag to frontend that user doesn't exist yet
+        return NextResponse.json({ 
+          message: "OTP verified correctly. Please complete your registration.", 
+          userExist: false,
+          email 
+        }, { status: 200 });
       }
     }
 
+    // Create session cookie for existing users or non-customer panels
+    await login(user!);
 
-
-    // Create session cookie
-    await login(user);
-
-    return NextResponse.json({ message: "OTP verified successfully", user: user.toObject() }, { status: 200 });
+    return NextResponse.json({ 
+      message: "OTP verified successfully", 
+      user: user!.toObject(),
+      userExist: true
+    }, { status: 200 });
   } catch (error: any) {
     console.error("Error in verify-otp API:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

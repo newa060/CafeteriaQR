@@ -29,3 +29,37 @@ export async function GET(req: Request) {
 
   return NextResponse.json({ user: { ...user, adminId } }, { status: 200 });
 }
+export async function PATCH(req: Request) {
+  const panel = req.headers.get("x-panel-context") || undefined;
+  const session = await getSession(panel);
+  
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await dbConnect();
+    const body = await req.json();
+    const User = (await import("@/models/User")).default;
+
+    // Whitelist editable fields
+    const updates: any = {};
+    if (body.name) updates.name = body.name;
+    if (body.faculty !== undefined) updates.faculty = body.faculty;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      session.user.id || session.user._id,
+      { $set: updates },
+      { new: true }
+    ).select("-password -__v");
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

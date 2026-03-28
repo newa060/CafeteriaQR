@@ -12,7 +12,8 @@ import {
   Plus,
   Minus,
   LogOut,
-  AlertCircle
+  AlertCircle,
+  CircleUser
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -119,10 +120,14 @@ export default function CustomerMenuPage() {
           </Button>
           <h1 className="text-xl font-bold">Menu</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={logout} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
-            <LogOut className="w-5 h-5" />
-          </Button>
+        <div className="flex items-center">
+          <button 
+            onClick={() => router.push(`/customer/${adminId}/profile`)} 
+            className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
+            aria-label="Profile"
+          >
+            <CircleUser className="w-10 h-10" />
+          </button>
         </div>
       </header>
 
