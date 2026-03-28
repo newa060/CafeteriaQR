@@ -106,7 +106,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 p-6 lg:p-10 pt-24 lg:pt-10 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 p-6 lg:p-10 pt-24 lg:pt-10 overflow-y-auto">
           {children}
         </div>
       </main>

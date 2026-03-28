@@ -70,3 +70,81 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to create admin" }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  if (!(await isSuperadmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await dbConnect();
+    const { id, name, email, canteenName, canteenCode } = await req.json();
+
+    if (!id || !name || !email || !canteenName || !canteenCode) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Find the admin user first
+    const admin = await User.findById(id);
+    if (!admin) {
+      return NextResponse.json({ error: "Admin not found" }, { status: 404 });
+    }
+
+    // Update the Admin User
+    admin.name = name;
+    admin.email = email;
+    await admin.save();
+
+    // Update the associated Cafeteria
+    if (admin.cafeteriaId) {
+      await Cafeteria.findByIdAndUpdate(admin.cafeteriaId, {
+        name: canteenName,
+        canteenCode: canteenCode
+      });
+    }
+
+    return NextResponse.json({ message: "Admin and Cafeteria updated successfully" });
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: "Canteen Code or Email already in use" }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Failed to update admin" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  if (!(await isSuperadmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Admin ID is required" }, { status: 400 });
+    }
+
+    await dbConnect();
+    
+    // Find the admin to get their cafeteriaId
+    const admin = await User.findById(id);
+    if (!admin) {
+      return NextResponse.json({ error: "Admin not found" }, { status: 404 });
+    }
+
+    // Delete the Cafeteria record
+    if (admin.cafeteriaId) {
+      await Cafeteria.findByIdAndDelete(admin.cafeteriaId);
+    }
+
+    // Delete the Admin User
+    await User.findByIdAndDelete(id);
+
+    return NextResponse.json({ message: "Admin and Cafeteria deleted successfully" });
+  } catch (error) {
+    console.error("Delete admin error:", error);
+    return NextResponse.json({ error: "Failed to delete admin" }, { status: 500 });
+  }
+}
+

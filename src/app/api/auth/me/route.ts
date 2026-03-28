@@ -3,8 +3,9 @@ import { getSession } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import Cafeteria from "@/models/Cafeteria";
 
-export async function GET() {
-  const session = await getSession();
+export async function GET(req: Request) {
+  const panel = req.headers.get("x-panel-context") || undefined;
+  const session = await getSession(panel);
   
   if (!session) {
     return NextResponse.json({ user: null }, { status: 401 });

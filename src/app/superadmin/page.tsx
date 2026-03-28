@@ -41,8 +41,10 @@ export default function SuperadminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null);
   
-  // Form state for creating new admin
+  // Form state for creating/editing admin
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -70,25 +72,77 @@ export default function SuperadminDashboard() {
     fetchAdmins();
   }, []);
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenuId(null);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const handleOpenModal = (admin?: AdminUser) => {
+    if (admin) {
+      setEditingAdmin(admin);
+      setFormData({
+        name: admin.name,
+        email: admin.email,
+        canteenName: admin.cafeteriaId?.name || "",
+        canteenCode: admin.cafeteriaId?.canteenCode || ""
+      });
+    } else {
+      setEditingAdmin(null);
+      setFormData({ name: "", email: "", canteenName: "", canteenCode: "" });
+    }
+    setIsModalOpen(true);
+    setError("");
+  };
+
+  const handleDelete = async (admin: AdminUser) => {
+    if (!confirm(`Are you sure you want to delete ${admin.name} and their cafeteria? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/superadmin/admins?id=${admin._id}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        fetchAdmins();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete admin");
+      }
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("An error occurred while deleting");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
 
+    const method = editingAdmin ? "PUT" : "POST";
+    const payload = editingAdmin 
+      ? { ...formData, id: editingAdmin._id } 
+      : formData;
+
     try {
       const res = await fetch("/api/superadmin/admins", {
-        method: "POST",
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
         setIsModalOpen(false);
+        setEditingAdmin(null);
         setFormData({ name: "", email: "", canteenName: "", canteenCode: "" });
         fetchAdmins();
       } else {
         const data = await res.json();
-        setError(data.error || "Failed to create admin");
+        setError(data.error || `Failed to ${editingAdmin ? "update" : "create"} admin`);
       }
     } catch (err) {
       setError("An error occurred during submission");
@@ -104,6 +158,7 @@ export default function SuperadminDashboard() {
     admin.cafeteriaId?.canteenCode?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
   return (
     <div className="space-y-12 max-w-7xl mx-auto pb-20">
       {/* Platform Overview */}
@@ -114,7 +169,7 @@ export default function SuperadminDashboard() {
         </div>
         <Button 
           className="h-14 px-8 rounded-2xl text-lg font-bold shadow-2xl shadow-primary/30 flex items-center gap-3"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => handleOpenModal()}
         >
           <UserPlus className="w-5 h-5" />
           Create New Admin
@@ -166,7 +221,7 @@ export default function SuperadminDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 overflow-visible">
           {loading ? (
             <div className="py-20 flex justify-center">
               <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -176,8 +231,10 @@ export default function SuperadminDashboard() {
               key={admin._id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              style={{ zIndex: activeMenuId === admin._id ? 100 : 1 }}
+              className="relative"
             >
-              <Card className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all p-4 px-6 md:p-6 shadow-2xl overflow-hidden group">
+              <Card className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all p-4 px-6 md:p-6 shadow-2xl overflow-visible relative group">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="flex items-center gap-4 min-w-[300px]">
                     <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 shrink-0 group-hover:bg-primary/10 transition-colors">
@@ -212,10 +269,44 @@ export default function SuperadminDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl border border-white/5 hover:bg-white/5">
-                      <MoreVertical className="w-5 h-5 text-gray-500" />
+                  <div className="flex items-center gap-3 relative">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={`h-12 w-12 rounded-xl border border-white/5 transition-all ${activeMenuId === admin._id ? "bg-primary text-white border-primary/20" : "hover:bg-white/5 text-gray-500"}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuId(activeMenuId === admin._id ? null : admin._id);
+                      }}
+                    >
+                      <MoreVertical className="w-5 h-5" />
                     </Button>
+
+                    <AnimatePresence>
+                      {activeMenuId === admin._id && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                          className="absolute right-0 top-14 w-48 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                        >
+                          <button 
+                            onClick={() => handleOpenModal(admin)}
+                            className="w-full px-4 py-3 text-left text-sm font-bold text-gray-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
+                          >
+                            <UserPlus className="w-4 h-4 text-primary" />
+                            Edit Cafeteria
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(admin)}
+                            className="w-full px-4 py-3 text-left text-sm font-bold text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2 border-t border-white/5"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete Admin
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </Card>
@@ -249,8 +340,10 @@ export default function SuperadminDashboard() {
               <form onSubmit={handleSubmit} className="p-10 space-y-8">
                 <div className="flex justify-between items-center mb-2">
                   <div className="space-y-1">
-                    <h2 className="text-4xl font-black text-white tracking-tighter">New Admin</h2>
-                    <p className="text-gray-500 text-sm font-medium">Create a cafeteria and assign an administrator.</p>
+                    <h2 className="text-4xl font-black text-white tracking-tighter">{editingAdmin ? "Edit Admin" : "New Admin"}</h2>
+                    <p className="text-gray-500 text-sm font-medium">
+                      {editingAdmin ? "Modify credentials or assigned cafeteria details." : "Create a cafeteria and assign an administrator."}
+                    </p>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="h-12 w-12 rounded-2xl bg-white/5">
                     <X className="w-6 h-6" />
@@ -289,7 +382,7 @@ export default function SuperadminDashboard() {
                 )}
 
                 <Button className="w-full h-16 text-xl font-black rounded-3xl shadow-2xl shadow-primary/40 flex items-center justify-center gap-3" disabled={submitting}>
-                  {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <> <ShieldCheck className="w-6 h-6" /> Create Admin Account </>}
+                  {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <> <ShieldCheck className="w-6 h-6" /> {editingAdmin ? "Update Admin Account" : "Create Admin Account"} </>}
                 </Button>
               </form>
             </motion.div>

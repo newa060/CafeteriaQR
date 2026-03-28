@@ -30,7 +30,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     try {
-      const res = await fetch("/api/auth/me");
+      // Determine the panel context from the URL
+      let panel = "customer";
+      if (pathname?.startsWith("/superadmin")) panel = "superadmin";
+      else if (pathname?.startsWith("/admin")) panel = "admin";
+
+      const res = await fetch("/api/auth/me", {
+        headers: {
+          "x-panel-context": panel
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
