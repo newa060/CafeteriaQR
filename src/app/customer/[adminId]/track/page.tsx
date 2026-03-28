@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/Badge";
 
 interface Order {
   _id: string;
-  status: "pending" | "accepted" | "preparing" | "ready" | "cancelled";
+  status: "pending" | "accepted" | "cancelled";
   totalAmount: number;
   timeSlot: string;
   items: Array<{ name: string; quantity: number; price: number }>;
@@ -30,8 +30,6 @@ interface Order {
 const statusMap = {
   pending: { label: "Order Pending", icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10" },
   accepted: { label: "Order Accepted", icon: CheckCircle2, color: "text-blue-500", bg: "bg-blue-500/10" },
-  preparing: { label: "Preparing Food", icon: UtensilsCrossed, color: "text-purple-500", bg: "bg-purple-500/10" },
-  ready: { label: "Ready for Pickup", icon: CheckCheck, color: "text-green-500", bg: "bg-green-500/10" },
   cancelled: { label: "Order Cancelled", icon: Package, color: "text-red-500", bg: "bg-red-500/10" },
 };
 
@@ -89,9 +87,6 @@ export default function OrderTrackPage() {
       } else if (order.status === "cancelled") {
         if ("vibrate" in navigator) navigator.vibrate([300, 100, 300, 100, 300]);
         playNotificationSound("error");
-      } else if (order.status === "ready") {
-        if ("vibrate" in navigator) navigator.vibrate([100, 50, 100, 50, 100]);
-        playNotificationSound("success");
       }
     }
     if (order) {
@@ -177,9 +172,7 @@ export default function OrderTrackPage() {
                     className="h-full bg-primary"
                     initial={{ width: "0%" }}
                     animate={{ 
-                      width: order.status === "pending" ? "25%" : 
-                            order.status === "accepted" ? "50%" : 
-                            order.status === "preparing" ? "75%" : "100%" 
+                      width: order.status === "pending" ? "50%" : "100%" 
                     }}
                   />
                 </div>

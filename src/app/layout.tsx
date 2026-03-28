@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/context/AuthContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 export default function RootLayout({
   children,
@@ -20,11 +21,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-background text-foreground`}>
         <AuthProvider>
-          <div className="flex flex-col min-h-screen">
-            <main className="flex-1 overflow-x-hidden pt-4 pb-20 sm:pb-4 px-4 sm:px-6 md:px-8">
-              {children}
-            </main>
-          </div>
+          <NotificationProvider>
+            <div className="flex flex-col min-h-screen">
+              <main className="flex-1 overflow-x-hidden pt-4 pb-20 sm:pb-4 px-4 sm:px-6 md:px-8">
+                {children}
+              </main>
+            </div>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

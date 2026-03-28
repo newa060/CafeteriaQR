@@ -40,7 +40,7 @@ interface Order {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"individual" | "bulk">("individual");
+  const [activeTab, setActiveTab] = useState<"individual" | "bulk" | "history">("individual");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -135,6 +135,16 @@ export default function AdminDashboard() {
           >
             Bulk View
           </button>
+          <button 
+            onClick={() => setActiveTab("history")}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === "history" 
+                ? "bg-primary text-white shadow-xl shadow-primary/20" 
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            Order History
+          </button>
         </div>
       </div>
 
@@ -142,15 +152,18 @@ export default function AdminDashboard() {
         {/* Main Dashboard Grid */}
         <div className="lg:col-span-3 space-y-6">
           <AnimatePresence mode="wait">
-            {activeTab === "individual" ? (
+            {activeTab === "individual" || activeTab === "history" ? (
               <motion.div 
-                key="individual"
+                key={activeTab}
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.02 }}
                 className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
               >
-                {orders.filter(o => o.status === "pending" || o.status === "accepted" || o.status === "preparing").map((order) => (
+                {orders
+                  .filter(o => 
+                    activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
+                  ).map((order) => (
                   <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
                     <CardContent className="p-7 space-y-6">
                       <div className="flex justify-between items-start">
@@ -158,8 +171,11 @@ export default function AdminDashboard() {
                           <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Customer Name</p>
                           <h3 className="text-xl font-extrabold text-white truncate max-w-[150px]">{order.customerName}</h3>
                         </div>
-                        <Badge variant={order.status === "pending" ? "warning" : "default"} className="px-3 py-1 rounded-lg">
-                          {order.status}
+                        <Badge variant={
+                          order.status === "pending" ? "warning" : 
+                          order.status === "accepted" ? "default" : "destructive"
+                        } className="px-3 py-1 rounded-lg">
+                          {order.status === "accepted" ? "accepted" : order.status === "pending" ? "pending" : "rejected"}
                         </Badge>
                       </div>
 
@@ -211,30 +227,29 @@ export default function AdminDashboard() {
                               </Button>
                             </div>
                           </div>
-                        ) : order.status === "accepted" ? (
-                          <Button 
-                            className="w-full h-14 text-lg font-black tracking-wide rounded-2xl bg-blue-600 hover:bg-blue-500"
-                            onClick={() => updateOrderStatus(order._id, "preparing")}
-                          >
-                            Set to Preparing
-                          </Button>
                         ) : (
-                          <Button 
-                            className="w-full h-14 text-lg font-black tracking-wide rounded-2xl bg-green-600 hover:bg-green-500"
-                            onClick={() => updateOrderStatus(order._id, "ready")}
-                          >
-                            Ready for Pickup
-                          </Button>
+                          <div className="py-2 text-center">
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Final Status</p>
+                            <p className={`text-xl font-black mt-1 ${
+                              order.status === 'accepted' ? 'text-green-500' : 'text-red-500'
+                            }`}>
+                              {order.status === 'accepted' ? 'ORDER ACCEPTED' : 'ORDER REJECTED'}
+                            </p>
+                          </div>
                         )}
                       </div>
                     </CardContent>
                   </Card>
                 ))}
 
-                {orders.filter(o => o.status !== "ready" && o.status !== "cancelled").length === 0 && (
+                {orders.filter(o => 
+                  activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
+                ).length === 0 && (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-700">
                     <Pizza className="w-16 h-16 mb-4 opacity-10" />
-                    <p className="text-xl font-bold italic opacity-30">No active orders right now.</p>
+                    <p className="text-xl font-bold italic opacity-30">
+                      {activeTab === "individual" ? "No pending orders." : "No history found."}
+                    </p>
                   </div>
                 )}
               </motion.div>

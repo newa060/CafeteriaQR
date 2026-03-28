@@ -189,7 +189,7 @@ export default function CheckoutPage() {
       if (res.ok) {
         const order = await res.json();
         localStorage.removeItem("cart");
-        router.push(`/customer/${adminId}/track?orderId=${order._id}`);
+        router.push(`/customer/${adminId}/order-success`);
       } else {
         const data = await res.json();
         setError(data.error || "Failed to place order");
