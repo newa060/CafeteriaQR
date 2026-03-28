@@ -7,7 +7,7 @@ export async function GET(
   req: Request,
   { params }: { params: { orderId: string } }
 ) {
-  const session = await getSession();
+  const session = await getSession("customer");
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -18,7 +18,7 @@ export async function GET(
 
     const order = await Order.findOne({ 
       _id: orderId, 
-      customerId: session.user._id 
+      customerId: session.user.id 
     }).populate("cafeteriaId");
 
     if (!order) {

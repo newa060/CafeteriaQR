@@ -13,7 +13,9 @@ import {
   Search,
   CheckCircle,
   Pizza,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -32,6 +34,8 @@ interface Order {
   totalAmount: number;
   timeSlot: string;
   status: "pending" | "accepted" | "preparing" | "ready" | "cancelled";
+  paymentScreenshotUrl?: string;
+  paymentName?: string;
   createdAt: string;
 }
 
@@ -40,6 +44,8 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
+  const [rejectConfirmId, setRejectConfirmId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     setIsRefreshing(true);
@@ -173,12 +179,38 @@ export default function AdminDashboard() {
 
                       <div className="pt-2">
                         {order.status === "pending" ? (
-                          <Button 
-                            className="w-full h-14 text-lg font-black tracking-wide rounded-2xl shadow-xl shadow-primary/30"
-                            onClick={() => updateOrderStatus(order._id, "accepted")}
-                          >
-                            Accept Order
-                          </Button>
+                          <div className="flex flex-col gap-3 pt-2">
+                            {order.paymentScreenshotUrl ? (
+                              <Button 
+                                variant="outline"
+                                className="h-12 w-full rounded-xl border-white/10 hover:border-primary/50 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                                onClick={() => setSelectedScreenshot(order.paymentScreenshotUrl!)}
+                              >
+                                <Eye className="w-4 h-4 text-primary" />
+                                Verify Receipt
+                              </Button>
+                            ) : (
+                              <div className="h-12 w-full rounded-xl bg-white/5 border border-dashed border-white/10 flex items-center justify-center opacity-30 text-[10px] font-bold uppercase tracking-widest gap-2">
+                                <Eye className="w-4 h-4" />
+                                No Receipt
+                              </div>
+                            )}
+                            <div className="flex gap-2 w-full">
+                              <Button 
+                                variant="outline"
+                                className="w-1/3 h-14 text-sm font-black border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
+                                onClick={() => setRejectConfirmId(order._id)}
+                              >
+                                Reject
+                              </Button>
+                              <Button 
+                                className="w-2/3 h-14 text-xl font-black rounded-2xl shadow-xl shadow-primary/30"
+                                onClick={() => updateOrderStatus(order._id, "accepted")}
+                              >
+                                Accept
+                              </Button>
+                            </div>
+                          </div>
                         ) : order.status === "accepted" ? (
                           <Button 
                             className="w-full h-14 text-lg font-black tracking-wide rounded-2xl bg-blue-600 hover:bg-blue-500"
@@ -285,6 +317,106 @@ export default function AdminDashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Screenshot Modal */}
+      <AnimatePresence>
+        {selectedScreenshot && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative max-w-2xl w-full h-[85vh] bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/10 flex flex-col pt-2 shadow-2xl"
+            >
+              {/* Modal Header */}
+              <div className="p-6 flex items-center justify-between border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-black text-white leading-none">Verify Payment</h3>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Receipt Preview</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedScreenshot(null)}
+                  className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all shadow-lg"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Image Container */}
+              <div className="flex-1 overflow-auto p-8 flex items-center justify-center bg-black/40">
+                <img 
+                  src={selectedScreenshot || ""} 
+                  alt="Payment Receipt" 
+                  className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl shadow-black ring-1 ring-white/10"
+                />
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-6 bg-white/5 flex flex-col items-center gap-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] italic">
+                  Powered by MenuQR Verification
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Reject Confirmation Modal */}
+      <AnimatePresence>
+        {rejectConfirmId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="max-w-md w-full bg-[#111111] rounded-[2rem] overflow-hidden border border-red-500/20 shadow-2xl p-8 text-center"
+            >
+              <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Package className="w-10 h-10 text-red-500" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-2">Reject Order?</h3>
+              <p className="text-gray-400 mb-8">
+                Are you sure you want to reject this order? The student will be notified and this action cannot be undone.
+              </p>
+              
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline"
+                  className="flex-1 h-14 rounded-2xl border-white/10 hover:bg-white/5"
+                  onClick={() => setRejectConfirmId(null)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 h-14 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold tracking-wide"
+                  onClick={() => {
+                    updateOrderStatus(rejectConfirmId, "cancelled");
+                    setRejectConfirmId(null);
+                  }}
+                >
+                  Confirm Reject
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

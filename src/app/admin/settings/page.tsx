@@ -177,6 +177,31 @@ export default function AdminSettingsPage() {
                 <CldUploadWidget 
                   uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
                   onSuccess={(result: any) => setPaymentQRUrl(result.info.secure_url)}
+                  options={{
+                    sources: ["local"],
+                    multiple: false,
+                    cropping: false,
+                    clientAllowedFormats: ["jpg", "png", "jpeg"],
+                    maxFileSize: 5000000,
+                    showAdvancedOptions: false,
+                    styles: {
+                      palette: {
+                        window: "#000000",
+                        windowBorder: "#222222",
+                        tabIcon: "#FF6600",
+                        menuIcons: "#FFFFFF",
+                        textDark: "#000000",
+                        textLight: "#FFFFFF",
+                        link: "#FF6600",
+                        action: "#FF6600",
+                        inactiveTabIcon: "#888888",
+                        error: "#FF0000",
+                        inProgress: "#FF6600",
+                        complete: "#20B832",
+                        sourceBg: "#111111"
+                      }
+                    }
+                  }}
                 >
                   {({ open }) => (
                     <Button 

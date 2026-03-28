@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
@@ -44,6 +44,60 @@ export default function OrderTrackPage() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const previousStatus = useRef<string | null>(null);
+
+  // Synthesized notification sound (avoids external asset blocking)
+  const playNotificationSound = (type: "success" | "error") => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioContext();
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === "success") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      } else {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      }
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.error("Audio Context failed", e);
+    }
+  };
+
+  useEffect(() => {
+    if (order && previousStatus.current && previousStatus.current !== order.status) {
+      if (order.status === "accepted") {
+        if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+        playNotificationSound("success");
+      } else if (order.status === "cancelled") {
+        if ("vibrate" in navigator) navigator.vibrate([300, 100, 300, 100, 300]);
+        playNotificationSound("error");
+      } else if (order.status === "ready") {
+        if ("vibrate" in navigator) navigator.vibrate([100, 50, 100, 50, 100]);
+        playNotificationSound("success");
+      }
+    }
+    if (order) {
+      previousStatus.current = order.status;
+    }
+  }, [order?.status]);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -116,17 +170,24 @@ export default function OrderTrackPage() {
                 <p className="text-gray-400">Order ID: #{order._id.slice(-6).toUpperCase()}</p>
               </div>
               
-              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-4">
-                <motion.div 
-                  className="h-full bg-primary"
-                  initial={{ width: "0%" }}
-                  animate={{ 
-                    width: order.status === "pending" ? "25%" : 
-                          order.status === "accepted" ? "50%" : 
-                          order.status === "preparing" ? "75%" : "100%" 
-                  }}
-                />
-              </div>
+              
+              {order.status !== "cancelled" ? (
+                <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-4">
+                  <motion.div 
+                    className="h-full bg-primary"
+                    initial={{ width: "0%" }}
+                    animate={{ 
+                      width: order.status === "pending" ? "25%" : 
+                            order.status === "accepted" ? "50%" : 
+                            order.status === "preparing" ? "75%" : "100%" 
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-bold">
+                  Your order receipt could not be verified. Please contact the canteen.
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

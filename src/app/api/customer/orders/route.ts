@@ -4,7 +4,7 @@ import Order from "@/models/Order";
 import { getSession } from "@/lib/auth";
 
 export async function POST(req: Request) {
-  const session = await getSession();
+  const session = await getSession("customer");
   if (!session || session.user.role !== "customer") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
     const order = await Order.create({
       cafeteriaId,
-      customerId: session.user._id,
+      customerId: session.user.id,
       customerName: session.user.name,
       items,
       totalAmount,
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const session = await getSession();
+  const session = await getSession("customer");
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
