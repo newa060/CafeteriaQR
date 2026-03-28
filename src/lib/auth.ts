@@ -5,7 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 const secretKey = "secret";
 const key = new TextEncoder().encode(process.env.JWT_SECRET || secretKey);
 
-export async function encrypt(payload: any) {
+type EncryptPayload = Record<string, unknown>;
+type SessionPayload = { user: { id: string; email: string; name: string; role: string; cafeteriaId?: string; faculty?: string }; expires: Date };
+type LoginUser = { _id?: { toString(): string }; id?: string; email: string; name: string; role: string; cafeteriaId?: { toString(): string }; faculty?: string };
+
+export async function encrypt(payload: EncryptPayload) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -13,11 +17,11 @@ export async function encrypt(payload: any) {
     .sign(key);
 }
 
-export async function decrypt(input: string): Promise<any> {
+export async function decrypt(input: string): Promise<SessionPayload> {
   const { payload } = await jwtVerify(input, key, {
     algorithms: ["HS256"],
   });
-  return payload;
+  return payload as unknown as SessionPayload;
 }
 
 // Isolated cookie names for each role to prevent cross-session issues
@@ -27,7 +31,7 @@ export const COOKIE_NAMES: Record<string, string> = {
   customer: "session_customer",
 };
 
-export async function login(user: any) {
+export async function login(user: LoginUser) {
   // Extract serializable fields
   const userPayload = {
     id: user._id?.toString() || user.id,

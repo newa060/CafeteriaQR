@@ -56,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     refreshUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = (newUser: User, redirectTo?: string) => {
