@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         fixed inset-y-0 left-0 z-40 w-64 bg-[#111111] border-r border-white/5 transform transition-transform duration-300 ease-in-out lg:translate-x-0
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
-        <div className="h-full flex flex-col p-6">
+        <div className="h-full flex flex-col p-6 pt-24 lg:pt-6">
           <div className="mb-10 px-2 lg:block hidden">
             <h1 className="text-2xl font-bold tracking-tight">CPS <span className="text-[#ff6b00]">Admin</span></h1>
             <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest">Management Panel</p>

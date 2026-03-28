@@ -248,8 +248,8 @@ export default function AdminSettingsPage() {
           </div>
           <Card className="bg-[#111111] border-white/5 p-8 shadow-2xl">
             <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl p-1.5 h-14">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
+                <div className="flex-1 flex items-center justify-center sm:justify-start bg-white/5 border border-white/10 rounded-2xl p-1.5 h-14">
                   <select 
                     value={newSlotHour}
                     onChange={(e) => setNewSlotHour(e.target.value)}
@@ -279,7 +279,7 @@ export default function AdminSettingsPage() {
                     <option value="PM" className="bg-[#0a0a0a] text-white uppercase">PM</option>
                   </select>
                 </div>
-                <Button type="button" onClick={handleAddSlot} className="h-14 px-8 rounded-2xl font-black text-lg shadow-xl shadow-primary/20">
+                <Button type="button" onClick={handleAddSlot} className="h-14 px-8 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 shrink-0 w-full sm:w-auto">
                   <Plus className="w-6 h-6 mr-2" />
                   Add Slot
                 </Button>

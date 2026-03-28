@@ -147,7 +147,7 @@ export default function MenuManagementPage() {
           <p className="text-gray-500 font-medium">Add, edit, or remove items from your cafeteria's menu.</p>
         </div>
         <Button 
-          className="h-14 px-8 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 flex items-center gap-3"
+          className="w-full md:w-auto h-14 px-8 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 flex justify-center items-center gap-3"
           onClick={() => handleOpenModal()}
         >
           <Plus className="w-5 h-5" />
@@ -191,12 +191,12 @@ export default function MenuManagementPage() {
                 </Badge>
               </div>
               <CardContent className="p-6 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-black text-white leading-tight">{item.name}</h3>
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-black text-white leading-tight truncate">{item.name}</h3>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
                   </div>
-                  <span className="text-2xl font-black text-primary">RS {item.price}</span>
+                  <span className="text-2xl font-black text-primary shrink-0">RS {item.price}</span>
                 </div>
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -252,7 +252,7 @@ export default function MenuManagementPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Item Name</label>
                       <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Classic Burger" required />
@@ -273,7 +273,7 @@ export default function MenuManagementPage() {
                     <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Brief description..." />
                   </div>
 
-                  <div className="flex items-center gap-4 py-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 py-2">
                     {/* Cloudinary Upload for Item Image */}
                     <CldUploadWidget 
                       uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
@@ -320,7 +320,7 @@ export default function MenuManagementPage() {
                       )}
                     </CldUploadWidget>
 
-                    <div className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 h-14 rounded-2xl">
+                    <div className="flex items-center justify-between sm:justify-start gap-3 bg-white/5 border border-white/5 px-4 h-14 rounded-2xl w-full sm:w-auto">
                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Available</span>
                       <input 
                         type="checkbox" 
