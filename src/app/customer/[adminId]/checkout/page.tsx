@@ -30,6 +30,7 @@ interface Cafeteria {
   name: string;
   paymentQRUrl?: string;
   timeSlots: string[];
+  isActive: boolean;
 }
 
 export default function CheckoutPage() {
@@ -99,6 +100,11 @@ export default function CheckoutPage() {
   const totalAmount = cartItems.reduce((acc, item) => acc + (item.price * cart[item._id]), 0);
 
   const handleSubmit = async () => {
+    if (cafeteria && !cafeteria.isActive) {
+      setError("Cafeteria is currently closed and not accepting orders.");
+      return;
+    }
+
     const finalTimeSlot = isCustomTime ? customTimeValue : selectedTimeSlot;
     
     if (!finalTimeSlot) {
@@ -171,6 +177,16 @@ export default function CheckoutPage() {
       </header>
 
       <div className="p-4 space-y-6">
+        {cafeteria && !cafeteria.isActive && (
+          <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-red-500">Cafeteria is Closed</p>
+              <p className="text-xs text-red-500/70">The cafeteria has stopped accepting orders. You cannot complete this checkout at this time.</p>
+            </div>
+          </div>
+        )}
+
         {/* Time-slot Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
@@ -182,6 +198,7 @@ export default function CheckoutPage() {
             {cafeteria?.timeSlots.map(slot => (
               <button
                 key={slot}
+                disabled={!cafeteria.isActive}
                 onClick={() => {
                   setSelectedTimeSlot(slot);
                   setIsCustomTime(false);
@@ -190,12 +207,13 @@ export default function CheckoutPage() {
                   !isCustomTime && selectedTimeSlot === slot 
                     ? "bg-primary/20 border-primary text-primary" 
                     : "bg-white/5 border-white/5 text-gray-400 hover:text-white"
-                }`}
+                } ${!cafeteria.isActive ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {slot}
               </button>
             ))}
             <button
+              disabled={!cafeteria?.isActive}
               onClick={() => {
                 setIsCustomTime(true);
                 setSelectedTimeSlot("");
@@ -204,13 +222,13 @@ export default function CheckoutPage() {
                 isCustomTime 
                   ? "bg-primary/20 border-primary text-primary" 
                   : "bg-white/5 border-white/5 text-gray-400 hover:text-white"
-              }`}
+              } ${!cafeteria?.isActive ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               Custom
             </button>
           </div>
 
-          {isCustomTime && (
+          {isCustomTime && cafeteria?.isActive && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }} 
               animate={{ opacity: 1, y: 0 }}
@@ -261,7 +279,7 @@ export default function CheckoutPage() {
         </section>
 
         {/* Payment Section */}
-        <section className="space-y-4 pt-2">
+        <section className={`space-y-4 pt-2 ${!cafeteria?.isActive ? "opacity-50 pointer-events-none" : ""}`}>
           <div className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-bold">Payment</h2>
@@ -325,7 +343,7 @@ export default function CheckoutPage() {
         </section>
 
         {/* Order Summary */}
-        <section className="bg-white/5 rounded-2xl p-4 space-y-3">
+        <section className={`bg-white/5 rounded-2xl p-4 space-y-3 ${!cafeteria?.isActive ? "opacity-50" : ""}`}>
           <div className="flex justify-between items-center text-sm text-gray-400">
             <span>Subtotal</span>
             <span>RS {totalAmount}</span>
@@ -346,10 +364,10 @@ export default function CheckoutPage() {
         {/* Submit */}
         <Button 
           className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20" 
-          disabled={submitting || (!isCustomTime && !selectedTimeSlot) || (isCustomTime && !customTimeValue)}
+          disabled={submitting || (!isCustomTime && !selectedTimeSlot) || (isCustomTime && !customTimeValue) || !cafeteria?.isActive}
           onClick={handleSubmit}
         >
-          {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "Complete Order"}
+          {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : (cafeteria?.isActive ? "Complete Order" : "Ordering Disabled")}
         </Button>
       </div>
       <div className="py-12 flex flex-col items-center justify-center opacity-30">

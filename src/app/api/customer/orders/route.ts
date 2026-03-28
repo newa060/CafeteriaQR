@@ -17,6 +17,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Verify cafeteria is active
+    const Cafeteria = (await import("@/models/Cafeteria")).default;
+    const cafeteria = await Cafeteria.findById(cafeteriaId);
+    if (!cafeteria || !cafeteria.isActive) {
+      return NextResponse.json({ error: "Cafeteria is currently closed and not accepting orders" }, { status: 400 });
+    }
+
     // Basic logic to check if order time is at least 10 minutes before slot
     // For simplicity, we assume the timeSlot is in HH:mm format (e.g., "10:15")
     const now = new Date();

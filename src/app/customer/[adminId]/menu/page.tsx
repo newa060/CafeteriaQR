@@ -11,7 +11,8 @@ import {
   Loader2,
   Plus,
   Minus,
-  LogOut
+  LogOut,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -33,6 +34,7 @@ interface Cafeteria {
   name: string;
   paymentQRUrl?: string;
   timeSlots: string[];
+  isActive: boolean;
 }
 
 export default function CustomerMenuPage() {
@@ -149,13 +151,26 @@ export default function CustomerMenuPage() {
       </div>
 
       {/* Menu Grid */}
-      <div className="px-4 space-y-4">
+      <div className="px-4 space-y-4 relative">
+        {!cafeteria?.isActive && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center pt-20">
+            <div className="sticky top-40 bg-red-500/90 backdrop-blur-md text-white p-6 rounded-3xl shadow-2xl border border-white/20 text-center max-w-[280px] animate-in zoom-in-95 duration-300">
+              <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-80" />
+              <h3 className="text-xl font-black uppercase tracking-tight">Cafeteria Closed</h3>
+              <p className="text-sm font-medium mt-2 opacity-90 leading-relaxed">
+                We are currently not accepting new orders. Please check back later!
+              </p>
+            </div>
+          </div>
+        )}
+
         {filteredItems.map((item, idx) => (
           <motion.div
             key={item._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
+            className={!cafeteria?.isActive ? "grayscale opacity-50 transition-all pointer-events-none" : ""}
           >
             <Card className="group relative overflow-hidden bg-black/40 border-white/5 hover:border-primary/30 transition-all duration-300">
               <CardContent className="p-0 flex flex-row h-32">
@@ -173,9 +188,11 @@ export default function CustomerMenuPage() {
                     </div>
                   )}
                   {/* Glassy overlay for the image when unavailable */}
-                  {!item.isAvailable && (
+                  {(!item.isAvailable || !cafeteria?.isActive) && (
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
-                      <span className="text-xs font-bold text-red-400 uppercase tracking-widest">Out</span>
+                      <span className="text-xs font-bold text-red-400 uppercase tracking-widest">
+                        {!cafeteria?.isActive ? "Closed" : "Out"}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -194,15 +211,23 @@ export default function CustomerMenuPage() {
                       {cart[item._id] ? (
                         <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10">
                           <button 
-                            onClick={() => removeFromCart(item._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFromCart(item._id);
+                            }}
                             className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
+                            disabled={!cafeteria?.isActive}
                           >
                             <Minus className="w-4 h-4" />
                           </button>
                           <span className="mx-2 text-sm font-bold min-w-[12px] text-center">{cart[item._id]}</span>
                           <button 
-                            onClick={() => addToCart(item._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(item._id);
+                            }}
                             className="w-7 h-7 flex items-center justify-center rounded-full bg-primary hover:brightness-110"
+                            disabled={!cafeteria?.isActive}
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -211,8 +236,11 @@ export default function CustomerMenuPage() {
                         <Button 
                           size="icon" 
                           className="w-9 h-9 rounded-full bg-white/10 hover:bg-primary transition-colors"
-                          onClick={() => addToCart(item._id)}
-                          disabled={!item.isAvailable}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(item._id);
+                          }}
+                          disabled={!item.isAvailable || !cafeteria?.isActive}
                         >
                           <Plus className="w-5 h-5" />
                         </Button>
@@ -234,7 +262,7 @@ export default function CustomerMenuPage() {
 
       {/* Sticky Cart Button */}
       <AnimatePresence>
-        {cartCount > 0 && (
+        {cartCount > 0 && !(cafeteria && !cafeteria.isActive) && (
           <motion.div 
             initial={{ y: 100 }}
             animate={{ y: 0 }}

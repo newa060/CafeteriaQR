@@ -20,9 +20,9 @@ export async function GET(
       cafeteria = await Cafeteria.findById(adminId);
     }
     
-    if (!cafeteria || !cafeteria.isActive) {
+    if (!cafeteria) {
       console.warn(`[CUSTOMER-API] Cafeteria lookup failed for ID/AdminID: ${adminId}`);
-      return NextResponse.json({ error: "Cafeteria not found or inactive" }, { status: 404 });
+      return NextResponse.json({ error: "Cafeteria not found" }, { status: 404 });
     }
 
 
