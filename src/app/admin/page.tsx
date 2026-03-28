@@ -1,0 +1,290 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  CheckCircle2, 
+  Clock, 
+  Loader2, 
+  Package, 
+  LayoutGrid, 
+  ListTodo, 
+  RefreshCw,
+  Search,
+  CheckCircle,
+  Pizza,
+  ArrowRight
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Input";
+
+interface OrderItem {
+  name: string;
+  quantity: number;
+}
+
+interface Order {
+  _id: string;
+  customerName: string;
+  items: OrderItem[];
+  totalAmount: number;
+  timeSlot: string;
+  status: "pending" | "accepted" | "preparing" | "ready" | "cancelled";
+  createdAt: string;
+}
+
+export default function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState<"individual" | "bulk">("individual");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchOrders = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch("/api/admin/orders");
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+    // Refresh for "Real-time" updates every 15 seconds
+    const interval = setInterval(fetchOrders, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const updateOrderStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        fetchOrders(); // Refresh after update
+      }
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
+  };
+
+  // Calculate Bulk/Total Items for the "Day's Total"
+  const bulkTotals = orders
+    .filter(o => o.status !== "cancelled")
+    .reduce((acc: { [key: string]: number }, order) => {
+      order.items.forEach(item => {
+        acc[item.name] = (acc[item.name] || 0) + item.quantity;
+      });
+      return acc;
+    }, {});
+
+  const totalItemCount = Object.values(bulkTotals).reduce((a, b) => a + b, 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[70vh]">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-10 max-w-7xl">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 leading-none">Cafeteria Managers</h1>
+          <p className="text-gray-500 font-medium">Real-time order management and prep list.</p>
+        </div>
+        
+        <div className="flex items-center gap-4 bg-[#1a1a1a] p-1.5 rounded-2xl border border-white/5 shadow-2xl overflow-hidden self-start md:self-auto">
+          <button 
+            onClick={() => setActiveTab("individual")}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === "individual" 
+                ? "bg-primary text-white shadow-xl shadow-primary/20" 
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            Individual Orders
+          </button>
+          <button 
+            onClick={() => setActiveTab("bulk")}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === "bulk" 
+                ? "bg-primary text-white shadow-xl shadow-primary/20" 
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            Bulk View
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Main Dashboard Grid */}
+        <div className="lg:col-span-3 space-y-6">
+          <AnimatePresence mode="wait">
+            {activeTab === "individual" ? (
+              <motion.div 
+                key="individual"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+              >
+                {orders.filter(o => o.status === "pending" || o.status === "accepted" || o.status === "preparing").map((order) => (
+                  <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
+                    <CardContent className="p-7 space-y-6">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Customer Name</p>
+                          <h3 className="text-xl font-extrabold text-white truncate max-w-[150px]">{order.customerName}</h3>
+                        </div>
+                        <Badge variant={order.status === "pending" ? "warning" : "default"} className="px-3 py-1 rounded-lg">
+                          {order.status}
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-1 py-1">
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Time Slot</p>
+                        <p className="text-4xl font-black text-primary leading-none tracking-tight">{order.timeSlot}</p>
+                      </div>
+
+                      <div className="space-y-2 border-t border-white/5 pt-4">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-gray-300">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
+                            <span className="text-sm font-medium">{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-2">
+                        {order.status === "pending" ? (
+                          <Button 
+                            className="w-full h-14 text-lg font-black tracking-wide rounded-2xl shadow-xl shadow-primary/30"
+                            onClick={() => updateOrderStatus(order._id, "accepted")}
+                          >
+                            Accept Order
+                          </Button>
+                        ) : order.status === "accepted" ? (
+                          <Button 
+                            className="w-full h-14 text-lg font-black tracking-wide rounded-2xl bg-blue-600 hover:bg-blue-500"
+                            onClick={() => updateOrderStatus(order._id, "preparing")}
+                          >
+                            Set to Preparing
+                          </Button>
+                        ) : (
+                          <Button 
+                            className="w-full h-14 text-lg font-black tracking-wide rounded-2xl bg-green-600 hover:bg-green-500"
+                            onClick={() => updateOrderStatus(order._id, "ready")}
+                          >
+                            Ready for Pickup
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {orders.filter(o => o.status !== "ready" && o.status !== "cancelled").length === 0 && (
+                  <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-700">
+                    <Pizza className="w-16 h-16 mb-4 opacity-10" />
+                    <p className="text-xl font-bold italic opacity-30">No active orders right now.</p>
+                  </div>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="bulk"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+              >
+                {/* Detailed Bulk List */}
+                <Card className="bg-[#111111] border-white/5 shadow-2xl">
+                  <div className="p-8 border-b border-white/5">
+                    <h3 className="text-2xl font-black text-white">Full Prep List</h3>
+                    <p className="text-gray-500">Aggregate item counts for all active orders.</p>
+                  </div>
+                  <CardContent className="p-8 space-y-4">
+                    {Object.entries(bulkTotals).map(([name, count]) => (
+                      <div key={name} className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/5 shadow-inner">
+                        <span className="text-lg font-bold text-white tracking-tight">{name}</span>
+                        <div className="flex items-center gap-3">
+                        <span className="text-3xl font-black text-primary">{count}x</span>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-8">
+                  <div className="grid grid-cols-2 gap-6">
+                    <Card className="bg-primary/10 border-primary/20 text-center py-10">
+                      <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Total Items</p>
+                      <p className="text-6xl font-black text-primary">{totalItemCount}</p>
+                    </Card>
+                    <Card className="bg-white/5 border-white/5 text-center py-10">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Active Orders</p>
+                      <p className="text-6xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "ready").length}</p>
+                    </Card>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Sidebar / Statistics Panel */}
+        <div className="space-y-8">
+          <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-3xl">
+            <div className="bg-[#222222] p-6 border-b border-white/5">
+              <h3 className="text-xl font-black text-white">Day's Total</h3>
+            </div>
+            <CardContent className="p-6 space-y-4 divide-y divide-white/5">
+              {Object.entries(bulkTotals).map(([name, count]) => (
+                <div key={name} className="flex justify-between items-center py-4 first:pt-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-black text-primary">{count}x</span>
+                    <span className="font-bold text-white text-md truncate max-w-[120px]">{name}</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 text-xs font-bold">
+                    {Math.ceil(count / 10)}x
+                  </div>
+                </div>
+              ))}
+              <div className="pt-6 flex justify-between items-center">
+                <span className="text-lg font-black text-white">Total Items</span>
+                <span className="text-3xl font-black text-primary border-b-4 border-primary/20">{totalItemCount}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button 
+            variant="ghost" 
+            className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-white group border border-dashed border-white/10 h-14 rounded-2xl"
+            onClick={fetchOrders}
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5 group-active:rotate-180 transition-transform" /> }
+            <span>{isRefreshing ? "Refreshing..." : "Force Refresh"}</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
