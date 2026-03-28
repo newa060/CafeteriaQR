@@ -110,8 +110,8 @@ export default function AdminDashboard() {
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 leading-none">Cafeteria Managers</h1>
-          <p className="text-gray-500 font-medium">Real-time order management and prep list.</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-2 leading-none">Canteen Dashboard</h1>
+          <p className="text-gray-500 font-medium">Manage live orders and see what to cook.</p>
         </div>
         
         <div className="flex items-center gap-4 bg-[#1a1a1a] p-1.5 rounded-2xl border border-white/5 shadow-2xl overflow-hidden self-start md:self-auto">
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
                 : "text-gray-500 hover:text-white"
             }`}
           >
-            Bulk View
+            Kitchen View
           </button>
           <button 
             onClick={() => setActiveTab("history")}
@@ -259,38 +259,42 @@ export default function AdminDashboard() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                className="flex flex-col gap-6"
               >
+                {/* Top Metrics */}
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
+                  <Card className="bg-primary/10 border-primary/20 text-center py-6 md:py-10">
+                    <p className="text-[10px] md:text-xs font-bold text-primary uppercase tracking-widest mb-1">Total Items to Cook</p>
+                    <p className="text-4xl md:text-6xl font-black text-primary">{totalItemCount}</p>
+                  </Card>
+                  <Card className="bg-white/5 border-white/5 text-center py-6 md:py-10">
+                    <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
+                    <p className="text-4xl md:text-6xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "ready").length}</p>
+                  </Card>
+                </div>
+
                 {/* Detailed Bulk List */}
                 <Card className="bg-[#111111] border-white/5 shadow-2xl">
-                  <div className="p-8 border-b border-white/5">
-                    <h3 className="text-2xl font-black text-white">Full Prep List</h3>
-                    <p className="text-gray-500">Aggregate item counts for all active orders.</p>
+                  <div className="p-6 md:p-8 border-b border-white/5">
+                    <h3 className="text-xl md:text-2xl font-black text-white">What to Cook Now</h3>
+                    <p className="text-sm md:text-base text-gray-500 mt-1">Combined totals of all items currently ordered by students.</p>
                   </div>
-                  <CardContent className="p-8 space-y-4">
+                  <CardContent className="p-4 md:p-8 space-y-3 md:space-y-4">
                     {Object.entries(bulkTotals).map(([name, count]) => (
-                      <div key={name} className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/5 shadow-inner">
-                        <span className="text-lg font-bold text-white tracking-tight">{name}</span>
+                      <div key={name} className="flex justify-between items-center bg-white/5 p-4 md:p-5 rounded-2xl border border-white/5 shadow-inner">
+                        <span className="text-base md:text-lg font-bold text-white tracking-tight">{name}</span>
                         <div className="flex items-center gap-3">
-                        <span className="text-3xl font-black text-primary">{count}x</span>
+                          <span className="text-2xl md:text-3xl font-black text-primary">{String(count)}x</span>
                         </div>
                       </div>
                     ))}
+                    {Object.keys(bulkTotals).length === 0 && (
+                      <div className="py-10 text-center text-gray-500 font-bold italic opacity-50">
+                        No items to cook right now.
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-
-                <div className="space-y-8">
-                  <div className="grid grid-cols-2 gap-6">
-                    <Card className="bg-primary/10 border-primary/20 text-center py-10">
-                      <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Total Items</p>
-                      <p className="text-6xl font-black text-primary">{totalItemCount}</p>
-                    </Card>
-                    <Card className="bg-white/5 border-white/5 text-center py-10">
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Active Orders</p>
-                      <p className="text-6xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "ready").length}</p>
-                    </Card>
-                  </div>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -300,7 +304,7 @@ export default function AdminDashboard() {
         <div className="space-y-8">
           <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-3xl">
             <div className="bg-[#222222] p-6 border-b border-white/5">
-              <h3 className="text-xl font-black text-white">Day's Total</h3>
+              <h3 className="text-xl font-black text-white">Today's Summary</h3>
             </div>
             <CardContent className="p-6 space-y-4 divide-y divide-white/5">
               {Object.entries(bulkTotals).map(([name, count]) => (
