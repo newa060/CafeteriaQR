@@ -31,6 +31,7 @@ export default function AdminSettingsPage() {
   const [name, setName] = useState("");
   const [paymentQRUrl, setPaymentQRUrl] = useState("");
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [isActive, setIsActive] = useState(true);
   const [newSlotHour, setNewSlotHour] = useState("09");
   const [newSlotMinute, setNewSlotMinute] = useState("00");
   const [newSlotPeriod, setNewSlotPeriod] = useState("AM");
@@ -46,6 +47,7 @@ export default function AdminSettingsPage() {
             setName(data.name || "");
             setPaymentQRUrl(data.paymentQRUrl || "");
             setTimeSlots(data.timeSlots || []);
+            setIsActive(data.isActive ?? true);
           } else {
             console.error("Cafeteria data is null");
             setError("Cafeteria profiles are currently unavailable for this account.");
@@ -90,7 +92,7 @@ export default function AdminSettingsPage() {
       const res = await fetch("/api/admin/cafeteria", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, paymentQRUrl, timeSlots }),
+        body: JSON.stringify({ name, paymentQRUrl, timeSlots, isActive }),
       });
 
       if (res.ok) {
@@ -142,10 +144,17 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Status</label>
-                  <div className="h-12 bg-white/5 border border-white/10 rounded-xl px-4 flex items-center justify-between">
-                    <span className="text-sm font-bold text-white uppercase tracking-widest">{cafeteria?.isActive ? "Active" : "Inactive"}</span>
-                    <div className={`w-2 h-2 rounded-full ${cafeteria?.isActive ? "bg-green-500" : "bg-red-500"}`} />
-                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setIsActive(!isActive)}
+                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 flex items-center justify-between hover:bg-white/10 transition-colors group"
+                  >
+                    <span className={`text-sm font-black uppercase tracking-widest ${isActive ? "text-green-500" : "text-red-500"}`}>
+                      {isActive ? "Active" : "Inactive"}
+                    </span>
+                    <div className={`w-3 h-3 rounded-full shadow-lg ${isActive ? "bg-green-500 shadow-green-500/50" : "bg-red-500 shadow-red-500/50"} transition-all duration-300`} />
+                  </button>
+                  <p className="text-[10px] text-gray-600 mt-1 pl-1 italic">Click to toggle your canteen's availability.</p>
                 </div>
               </div>
             </div>
