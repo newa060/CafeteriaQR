@@ -10,11 +10,13 @@ import {
   ChevronRight, 
   Loader2,
   Plus,
-  Minus
+  Minus,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge"; // I'll need to create this
+import { Badge } from "@/components/ui/Badge"; 
+import { useAuth } from "@/context/AuthContext";
 
 interface MenuItem {
   _id: string;
@@ -37,6 +39,7 @@ export default function CustomerMenuPage() {
   const params = useParams();
   const router = useRouter();
   const adminId = params.adminId as string;
+  const { logout } = useAuth();
 
   const [cafeteria, setCafeteria] = useState<Cafeteria | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -108,16 +111,19 @@ export default function CustomerMenuPage() {
     <div className="pb-24 max-w-lg mx-auto bg-background text-white min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="w-6 h-6" />
-        </Button>
-        <h1 className="text-xl font-bold">Menu</h1>
-        <div className="relative">
-          <Button variant="ghost" size="icon">
-            <Search className="w-6 h-6" />
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <h1 className="text-xl font-bold">Menu</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={logout} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+            <LogOut className="w-5 h-5" />
           </Button>
         </div>
       </header>
+
 
       {/* Hero / Info */}
       <div className="p-4 pt-6">

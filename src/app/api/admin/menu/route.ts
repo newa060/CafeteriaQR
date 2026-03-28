@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import MenuItem from "@/models/MenuItem";
+import User from "@/models/User";
 import { getSession } from "@/lib/auth";
 
 // Helper to check if current user is admin/superadmin and return their cafeteriaId
@@ -9,7 +10,14 @@ async function getAdminCafeteria() {
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
     return null;
   }
-  return session.user.cafeteriaId;
+  // If cafeteriaId is in the session (JWT), use it directly
+  if (session.user.cafeteriaId) {
+    return session.user.cafeteriaId;
+  }
+  // Fallback: look it up from DB (handles sessions created before cafeteria was linked)
+  await dbConnect();
+  const user = await User.findById(session.user.id).select("cafeteriaId");
+  return user?.cafeteriaId?.toString() || null;
 }
 
 export async function GET() {

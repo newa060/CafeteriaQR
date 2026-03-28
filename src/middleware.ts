@@ -1,59 +1,102 @@
 import { NextRequest, NextResponse } from "next/server";
-import { decrypt } from "@/lib/auth";
+import { decrypt, updateSession, COOKIE_NAMES } from "@/lib/auth";
 
-// 1. Specify protected and public routes
-const protectedRoutes = ["/admin", "/superadmin", "/customer"];
-const publicRoutes = ["/login", "/api/auth"];
+// Login URLs for each panel
+const loginRoutes = ["/customer/login", "/admin/login", "/superadmin/login", "/login"];
+
+// Protected route prefixes and their required roles + login redirect
+const protectedPanels = [
+  { prefix: "/superadmin", roles: ["superadmin"], loginUrl: "/superadmin/login", cookieName: COOKIE_NAMES.superadmin },
+  { prefix: "/admin",      roles: ["admin"],      loginUrl: "/admin/login",      cookieName: COOKIE_NAMES.admin },
+  { prefix: "/customer",   roles: ["customer"],   loginUrl: "/customer/login",   cookieName: COOKIE_NAMES.customer },
+];
 
 export default async function middleware(req: NextRequest) {
-  // 2. Check if the current route is protected or public
   const path = req.nextUrl.pathname;
-  const isProtectedRoute = protectedRoutes.some((route) => path.startsWith(route));
-  const isPublicRoute = publicRoutes.some((route) => path.startsWith(route));
 
-  // 3. Decrypt the session from the cookie
-  const cookie = req.cookies.get("session")?.value;
+  // 1. Handle Root Path - Direct Redirect based on any existing session
+  if (path === "/") {
+    let session = null;
+    for (const cookieName of Object.values(COOKIE_NAMES)) {
+      const cookie = req.cookies.get(cookieName)?.value;
+      if (cookie) {
+        session = await decrypt(cookie).catch(() => null);
+        if (session) break;
+      }
+    }
+    if (session) {
+      const role = session.user.role as string;
+      if (role === "superadmin") return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
+      if (role === "admin")      return NextResponse.redirect(new URL("/admin", req.nextUrl));
+      return NextResponse.redirect(new URL("/customer", req.nextUrl));
+    }
+    // No session? Customer landing is the default "website"
+    return NextResponse.redirect(new URL("/customer", req.nextUrl));
+  }
+
+  // 2. Handle Login Pages
+  if (loginRoutes.some((r) => path === r || path.startsWith(r))) {
+    let session = null;
+    for (const cookieName of Object.values(COOKIE_NAMES)) {
+      const cookie = req.cookies.get(cookieName)?.value;
+      if (cookie) {
+        session = await decrypt(cookie).catch(() => null);
+        if (session) break;
+      }
+    }
+
+    if (session) {
+      const role = session.user.role as string;
+      
+      // If visiting generic /login, kick to their dashboard
+      if (path === "/login") {
+        if (role === "superadmin") return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
+        if (role === "admin")      return NextResponse.redirect(new URL("/admin", req.nextUrl));
+        return NextResponse.redirect(new URL("/customer", req.nextUrl));
+      }
+
+      // If visiting THEIR OWN login page, kick to their dashboard
+      if (path === "/superadmin/login" && role === "superadmin") return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
+      if (path === "/admin/login" && role === "admin") return NextResponse.redirect(new URL("/admin", req.nextUrl));
+      if (path === "/customer/login" && role === "customer") return NextResponse.redirect(new URL("/customer", req.nextUrl));
+
+      // ALLOW visiting OTHER login pages (so they can switch accounts)
+      return (await updateSession(req)) || NextResponse.next();
+    }
+
+    return NextResponse.next();
+  }
+
+
+  // 3. Handle Protected Panels
+  const panel = protectedPanels.find((p) => path.startsWith(p.prefix));
+  if (!panel) return NextResponse.next();
+
+  // Decrypt session for THIS specific panel
+  const cookie = req.cookies.get(panel.cookieName)?.value;
   const session = cookie ? await decrypt(cookie).catch(() => null) : null;
 
-  // 4. Redirect to /login if the user is not authenticated
-  if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+  // Not authenticated for this panel → redirect to its login
+  if (!session) {
+    return NextResponse.redirect(new URL(panel.loginUrl, req.nextUrl));
   }
 
-  // 5. Check roles for protected routes
-  if (session && isProtectedRoute) {
-    const role = session.user.role;
 
-    if (path.startsWith("/superadmin") && role !== "superadmin") {
-      return NextResponse.redirect(new URL("/login", req.nextUrl));
-    }
-
-    if (path.startsWith("/admin") && role !== "admin" && role !== "superadmin") {
-      return NextResponse.redirect(new URL("/customer", req.nextUrl));
-    }
+  // Final role verification
+  const role = session.user.role as string;
+  if (!panel.roles.includes(role)) {
+    if (role === "superadmin") return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
+    if (role === "admin")      return NextResponse.redirect(new URL("/admin", req.nextUrl));
+    return NextResponse.redirect(new URL("/customer", req.nextUrl));
   }
 
-  // 6. Redirect to /dashboard if the user is authenticated
-  if (
-    isPublicRoute &&
-    session &&
-    !path.startsWith("/api/auth") &&
-    !path.startsWith("/api/auth/logout")
-  ) {
-    const role = session.user.role;
-    if (role === "superadmin") {
-      return NextResponse.redirect(new URL("/superadmin", req.nextUrl));
-    } else if (role === "admin") {
-      return NextResponse.redirect(new URL("/admin", req.nextUrl));
-    } else {
-      return NextResponse.redirect(new URL("/customer", req.nextUrl));
-    }
-  }
-
-  return NextResponse.next();
+  return (await updateSession(req)) || NextResponse.next();
 }
+
 
 // Routes Middleware should not run on
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };
+
+

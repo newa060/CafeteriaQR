@@ -5,25 +5,30 @@ import Cafeteria from "@/models/Cafeteria";
 
 export async function GET(
   req: Request,
-  { params }: { params: { adminId: string } }
+  { params }: { params: Promise<{ adminId: string }> }
 ) {
   try {
     await dbConnect();
-    const { adminId } = params;
+    const { adminId } = await params;
 
-    if (!adminId) {
-      return NextResponse.json({ error: "Cafeteria ID is required" }, { status: 400 });
+    // The 'adminId' from the URL refers to the User ID of the cafeteria manager
+    // We must find the cafeteria whose adminId field matches this ID
+    let cafeteria = await Cafeteria.findOne({ adminId: adminId });
+    
+    // Fallback: Check if the ID provided is actually the Cafeteria's own _id
+    if (!cafeteria) {
+      cafeteria = await Cafeteria.findById(adminId);
     }
-
-    // Check if cafeteria exists and is active
-    const cafeteria = await Cafeteria.findById(adminId);
+    
     if (!cafeteria || !cafeteria.isActive) {
-      return NextResponse.json({ error: "Cafeteria not found" }, { status: 404 });
+      console.warn(`[CUSTOMER-API] Cafeteria lookup failed for ID/AdminID: ${adminId}`);
+      return NextResponse.json({ error: "Cafeteria not found or inactive" }, { status: 404 });
     }
+
 
     // Fetch menu items for this cafeteria
     const menuItems = await MenuItem.find({ 
-      cafeteriaId: adminId, 
+      cafeteriaId: cafeteria._id, 
       isAvailable: true 
     });
 

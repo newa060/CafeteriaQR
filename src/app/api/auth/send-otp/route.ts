@@ -16,12 +16,16 @@ export async function POST(req: Request) {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
+    // Log the OTP for debugging/terminal access
+    console.log(`[AUTH] OTP for ${email}: ${otpCode}`);
+
     // Upsert the OTP in the database
     await OTP.findOneAndUpdate(
       { email },
       { otp: otpCode, expiresAt, used: false },
       { upsert: true, new: true }
     );
+
 
     // Send the OTP via email
     await sendOTPEmail(email, otpCode);

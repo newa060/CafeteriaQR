@@ -7,7 +7,7 @@ import { login } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const { email, otp, name } = await req.json();
+    const { email, otp, name, loginPanel } = await req.json();
 
     if (!email || !otp) {
       return NextResponse.json({ error: "Email and OTP are required" }, { status: 400 });
@@ -32,13 +32,44 @@ export async function POST(req: Request) {
     // Check if the user exists
     let user = await User.findOne({ email });
 
-    // If the user doesn't exist, create a new one (as customer)
-    if (!user) {
-      if (!name) {
-        return NextResponse.json({ error: "Name is required for new users" }, { status: 400 });
+    if (loginPanel === "superadmin") {
+      // Only the configured SUPERADMIN_EMAIL may log in here
+      const superadminEmail = process.env.SUPERADMIN_EMAIL?.toLowerCase();
+      if (email.toLowerCase() !== superadminEmail) {
+        return NextResponse.json({ error: "Access Denied: This link is reserved for the primary platform administrator." }, { status: 403 });
       }
-      user = await User.create({ name, email, role: "customer" });
+      
+      if (!user) {
+        user = await User.create({ name: email.split("@")[0], email, role: "superadmin" });
+      } else if (user.role !== "superadmin") {
+        user.role = "superadmin";
+        await user.save();
+      }
+    } else if (loginPanel === "admin") {
+      // Strict Check: ONLY allow existing users with the 'admin' role
+      if (!user || user.role !== "admin") {
+        return NextResponse.json({ 
+          error: "Access Denied: This account does not have cafeteria management privileges." 
+        }, { status: 403 });
+      }
+    } else if (loginPanel === "customer") {
+      // Customer Panel: Reject if they are actually an admin or superadmin
+      // They MUST use their own designated management portals
+      if (user && user.role !== "customer") {
+        return NextResponse.json({ 
+          error: `This account is registered as ${user.role}. Please use the ${user.role} dashboard to sign in.` 
+        }, { status: 403 });
+      }
+
+      if (!user) {
+        if (!name) {
+          return NextResponse.json({ error: "Name is required for new users" }, { status: 400 });
+        }
+        user = await User.create({ name, email, role: "customer" });
+      }
     }
+
+
 
     // Create session cookie
     await login(user);

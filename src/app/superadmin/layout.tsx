@@ -26,6 +26,11 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
   const { logout, user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
+  // No sidebar/shell for the login page
+  if (pathname === "/superadmin/login") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       {/* Mobile Header */}

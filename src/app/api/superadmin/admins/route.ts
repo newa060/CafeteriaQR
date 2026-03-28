@@ -43,23 +43,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User already exists with this email" }, { status: 400 });
     }
 
-    // Create the Admin user first
+    // Create the Cafeteria first (so we have its _id for the admin user)
+    const cafeteria = await Cafeteria.create({
+      name: canteenName,
+      adminId: new (require("mongoose").Types.ObjectId)(), // temporary placeholder
+      canteenCode,
+    });
+
+    // Create the Admin user with cafeteriaId already set (required by schema)
     const admin = await User.create({
       name,
       email,
       role: "admin",
+      cafeteriaId: cafeteria._id,
     });
 
-    // Create the Cafeteria and link to admin
-    const cafeteria = await Cafeteria.create({
-      name: canteenName,
-      adminId: admin._id,
-      canteenCode,
-    });
-
-    // Link cafeteria back to admin
-    admin.cafeteriaId = cafeteria._id;
-    await admin.save();
+    // Update the cafeteria with the real adminId
+    cafeteria.adminId = admin._id;
+    await cafeteria.save();
 
     return NextResponse.json({ message: "Admin and Cafeteria created successfully", admin }, { status: 201 });
   } catch (error: any) {

@@ -29,6 +29,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { logout, user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
+  // No sidebar/shell for the login page
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white flex">
       {/* Mobile Header */}

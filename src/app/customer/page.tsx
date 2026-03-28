@@ -10,10 +10,12 @@ import {
   Loader2, 
   Store,
   QrCode,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CustomerLandingPage() {
   const router = useRouter();
@@ -22,6 +24,7 @@ export default function CustomerLandingPage() {
   const [user, setUser] = useState<any>(null);
   const [canteenCode, setCanteenCode] = useState("");
   const [error, setError] = useState("");
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -32,10 +35,13 @@ export default function CustomerLandingPage() {
           setUser(data.user);
           
           // If already has a canteen, redirect to menu
-          if (data.user.adminId) {
-            router.push(`/customer/${data.user.adminId}/menu`);
+          // We check for cafeteriaId in the session
+          const canteenId = data.user.cafeteriaId || data.user.adminId;
+          if (canteenId) {
+            router.push(`/customer/${canteenId}/menu`);
             return;
           }
+
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
@@ -96,11 +102,23 @@ export default function CustomerLandingPage() {
       <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#ff6b00]/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#ff6b00]/05 blur-[120px] rounded-full pointer-events-none" />
 
+      <div className="fixed top-0 left-0 right-0 p-4 flex justify-end z-20">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={logout} 
+          className="text-gray-500 hover:text-white"
+        >
+          <LogOut className="w-5 h-5" />
+        </Button>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full text-center space-y-8 relative z-10"
       >
+
         <div className="space-y-3">
           <div className="flex justify-center mb-6">
             <div className="bg-[#ff6b00] p-4 rounded-2xl shadow-xl shadow-[#ff6b00]/20">

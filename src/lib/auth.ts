@@ -20,8 +20,15 @@ export async function decrypt(input: string): Promise<any> {
   return payload;
 }
 
+// Isolated cookie names for each role to prevent cross-session issues
+export const COOKIE_NAMES: Record<string, string> = {
+  superadmin: "session_superadmin",
+  admin: "session_admin",
+  customer: "session_customer",
+};
+
 export async function login(user: any) {
-  // Extract only needed serializable fields to avoid DATA_CLONE_ERR
+  // Extract serializable fields
   const userPayload = {
     id: user._id?.toString() || user.id,
     email: user.email,
@@ -31,38 +38,100 @@ export async function login(user: any) {
     faculty: user.faculty,
   };
 
-  // Create the session
-  const expires = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
+  const role = user.role as string;
+  const cookieName = COOKIE_NAMES[role] || "session_customer";
+
+  // Create the session - 30 days as requested (Strong persistence)
+  const duration = 30 * 24 * 60 * 60 * 1000;
+  const expires = new Date(Date.now() + duration);
   const session = await encrypt({ user: userPayload, expires });
 
-  // Save the session in a cookie
-  (await cookies()).set("session", session, { expires, httpOnly: true });
+  const cookieStore = await cookies();
+  
+  // Save the new session
+  cookieStore.set(cookieName, session, { 
+    expires, 
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
 }
 
-export async function logout() {
-  // Destroy the session
-  (await cookies()).set("session", "", { expires: new Date(0) });
+
+export async function logout(role?: string) {
+  if (role && COOKIE_NAMES[role]) {
+    // Destroy specific session
+    (await cookies()).set(COOKIE_NAMES[role], "", { 
+      expires: new Date(0),
+      path: "/",
+    });
+  } else {
+    // Destroy all possible session cookies
+    const cookieStore = await cookies();
+    Object.values(COOKIE_NAMES).forEach((name) => {
+      cookieStore.set(name, "", { expires: new Date(0), path: "/" });
+    });
+  }
 }
 
-export async function getSession() {
-  const session = (await cookies()).get("session")?.value;
-  if (!session) return null;
-  return await decrypt(session);
+export async function getSession(role?: string) {
+  const cookieStore = await cookies();
+  
+  if (role && COOKIE_NAMES[role]) {
+    const sessionCookie = cookieStore.get(COOKIE_NAMES[role])?.value;
+    if (!sessionCookie) return null;
+    return await decrypt(sessionCookie).catch(() => null);
+  }
+
+  // Fallback: check all valid session cookies in order of priority
+  for (const name of Object.values(COOKIE_NAMES)) {
+    const rawValue = cookieStore.get(name)?.value;
+    if (rawValue) {
+      const decoded = await decrypt(rawValue).catch(() => null);
+      if (decoded) return decoded;
+    }
+  }
+  
+  return null;
 }
+
 
 export async function updateSession(request: NextRequest) {
-  const session = request.cookies.get("session")?.value;
-  if (!session) return;
+  // Determine role based on path
+  const path = request.nextUrl.pathname;
+  let role = "customer";
+  if (path.startsWith("/superadmin")) role = "superadmin";
+  else if (path.startsWith("/admin")) role = "admin";
 
-  // Refresh the session so it doesn't expire
-  const parsed = await decrypt(session);
-  parsed.expires = new Date(Date.now() + 2 * 60 * 60 * 1000);
-  const res = NextResponse.next();
-  res.cookies.set({
-    name: "session",
-    value: await encrypt(parsed),
-    httpOnly: true,
-    expires: parsed.expires,
-  });
-  return res;
+  const cookieName = COOKIE_NAMES[role];
+  const cookieValue = request.cookies.get(cookieName)?.value;
+  if (!cookieValue) return null;
+
+  try {
+    // Extend the session by another 30 days
+    const parsed = await decrypt(cookieValue);
+    const duration = 30 * 24 * 60 * 60 * 1000;
+    parsed.expires = new Date(Date.now() + duration);
+    
+    const res = NextResponse.next();
+    
+    // Standard cookie setting syntax: (name, value, options)
+    res.cookies.set(cookieName, await encrypt(parsed), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      expires: parsed.expires,
+    });
+    
+    return res;
+  } catch (error) {
+    console.error("Session refresh failed:", error);
+    return null;
+  }
 }
+
+
+
+

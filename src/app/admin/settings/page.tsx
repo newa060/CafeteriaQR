@@ -12,7 +12,7 @@ import {
   QrCode, 
   Check, 
   AlertCircle,
-  Cofee,
+  Coffee,
   Info
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -39,17 +39,26 @@ export default function AdminSettingsPage() {
         const res = await fetch("/api/admin/cafeteria");
         if (res.ok) {
           const data = await res.json();
-          setCafeteria(data);
-          setName(data.name);
-          setPaymentQRUrl(data.paymentQRUrl || "");
-          setTimeSlots(data.timeSlots || []);
+          if (data) {
+            setCafeteria(data);
+            setName(data.name || "");
+            setPaymentQRUrl(data.paymentQRUrl || "");
+            setTimeSlots(data.timeSlots || []);
+          } else {
+            console.error("Cafeteria data is null");
+            setError("Cafeteria profiles are currently unavailable for this account.");
+          }
+        } else {
+          setError("Failed to fetch cafeteria details. Please refresh or try again.");
         }
       } catch (err) {
         console.error("Failed to fetch cafeteria:", err);
+        setError("Something went wrong while loading your cafeteria settings.");
       } finally {
         setLoading(false);
       }
     };
+
 
     fetchCafeteria();
   }, []);

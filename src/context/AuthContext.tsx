@@ -15,7 +15,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (user: User) => void;
+  login: (user: User, redirectTo?: string) => void;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -49,8 +49,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshUser();
   }, []);
 
-  const login = (newUser: User) => {
+  const login = (newUser: User, redirectTo?: string) => {
     setUser(newUser);
+    if (redirectTo) {
+      router.push(redirectTo);
+      return;
+    }
     if (newUser.role === "superadmin") {
       router.push("/superadmin");
     } else if (newUser.role === "admin") {
@@ -62,9 +66,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const currentRole = user?.role;
+      await fetch("/api/auth/logout", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: currentRole })
+      });
       setUser(null);
-      router.push("/login");
+      if (currentRole === "superadmin") router.push("/superadmin/login");
+      else if (currentRole === "admin") router.push("/admin/login");
+      else router.push("/customer/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
