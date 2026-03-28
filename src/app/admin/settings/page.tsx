@@ -18,7 +18,17 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { CldUploadWidget } from "next-cloudinary";
+import { useRef } from "react";
+
+const formatTime12h = (time24: string) => {
+  if (!time24) return "";
+  const [h, m] = time24.split(":");
+  if (!h || !m) return time24;
+  let hour = parseInt(h, 10);
+  const period = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, "0")}:${m} ${period}`;
+};
 
 export default function AdminSettingsPage() {
   const [cafeteria, setCafeteria] = useState<any>(null);
@@ -35,6 +45,40 @@ export default function AdminSettingsPage() {
   const [newSlotHour, setNewSlotHour] = useState("09");
   const [newSlotMinute, setNewSlotMinute] = useState("00");
   const [newSlotPeriod, setNewSlotPeriod] = useState("AM");
+  
+  // Custom uploader states
+  const qrInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingQR, setUploadingQR] = useState(false);
+
+  const handleQRUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingQR(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    // Use fallback if env is missing
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "CafeteriaQR");
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "da5jaib7d"}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.secure_url) {
+        setPaymentQRUrl(data.secure_url);
+      } else {
+        setError("Failed to upload image.");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError("Error uploading the image.");
+    } finally {
+      setUploadingQR(false);
+      if (qrInputRef.current) qrInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     const fetchCafeteria = async () => {
@@ -174,47 +218,26 @@ export default function AdminSettingsPage() {
                   Upload your payment QR image (e.g., eSewa, Khalti, or Bank QR). It will be displayed to customers during checkout.
                 </p>
                 
-                <CldUploadWidget 
-                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-                  onSuccess={(result: any) => setPaymentQRUrl(result.info.secure_url)}
-                  options={{
-                    sources: ["local"],
-                    multiple: false,
-                    cropping: false,
-                    clientAllowedFormats: ["jpg", "png", "jpeg"],
-                    maxFileSize: 5000000,
-                    showAdvancedOptions: false,
-                    styles: {
-                      palette: {
-                        window: "#000000",
-                        windowBorder: "#222222",
-                        tabIcon: "#FF6600",
-                        menuIcons: "#FFFFFF",
-                        textDark: "#000000",
-                        textLight: "#FFFFFF",
-                        link: "#FF6600",
-                        action: "#FF6600",
-                        inactiveTabIcon: "#888888",
-                        error: "#FF0000",
-                        inProgress: "#FF6600",
-                        complete: "#20B832",
-                        sourceBg: "#111111"
-                      }
-                    }
-                  }}
+                <input 
+                  type="file" 
+                  accept="image/png, image/jpeg, image/jpg" 
+                  className="hidden" 
+                  ref={qrInputRef} 
+                  onChange={handleQRUpload} 
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wide transition-all"
+                  onClick={() => qrInputRef.current?.click()}
+                  disabled={uploadingQR}
                 >
-                  {({ open }) => (
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wide"
-                      onClick={() => open()}
-                    >
-                      <QrCode className="w-5 h-5 mr-3" />
-                      {paymentQRUrl ? "Change Payment QR" : "Upload Payment QR"}
-                    </Button>
+                  {uploadingQR ? (
+                    <><Loader2 className="w-5 h-5 mr-3 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><QrCode className="w-5 h-5 mr-3" /> {paymentQRUrl ? "Change Payment QR" : "Upload Payment QR"}</>
                   )}
-                </CldUploadWidget>
+                </Button>
               </div>
 
               <div className="flex justify-center">
@@ -289,9 +312,9 @@ export default function AdminSettingsPage() {
                 {timeSlots.map(slot => (
                   <div 
                     key={slot} 
-                    className="flex items-center justify-between h-12 bg-white/5 border border-white/5 rounded-xl px-4 group hover:border-primary/30 transition-all"
+                    className="flex items-center justify-between h-12 bg-white/5 border border-white/5 rounded-xl px-4 group hover:border-primary/30 transition-all font-mono"
                   >
-                    <span className="text-sm font-bold text-white">{slot}</span>
+                    <span className="text-sm font-bold text-white">{formatTime12h(slot)}</span>
                     <button 
                       type="button" 
                       onClick={() => handleRemoveSlot(slot)}

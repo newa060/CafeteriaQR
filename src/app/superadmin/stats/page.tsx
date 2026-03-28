@@ -7,6 +7,7 @@ import {
   Store, 
   ShoppingBag, 
   DollarSign, 
+  Banknote,
   ArrowUpRight, 
   Loader2, 
   Clock,
@@ -89,8 +90,8 @@ export default function PlatformStatsPage() {
     },
     { 
       label: "Total Revenue", 
-      value: `$${data.metrics.totalRevenue.toLocaleString()}`, 
-      icon: DollarSign, 
+      value: `RS ${data.metrics.totalRevenue.toLocaleString()}`, 
+      icon: Banknote, 
       color: "text-emerald-500", 
       bg: "bg-emerald-500/10",
       description: "Processed payments"

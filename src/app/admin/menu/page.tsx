@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { CldUploadWidget } from "next-cloudinary";
+import { useRef } from "react";
 
 interface MenuItem {
   _id: string;
@@ -48,6 +48,39 @@ export default function MenuManagementPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Custom uploader states
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const body = new FormData();
+    body.append("file", file);
+    body.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "CafeteriaQR");
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "da5jaib7d"}/image/upload`, {
+        method: "POST",
+        body,
+      });
+      const data = await res.json();
+      if (data.secure_url) {
+        setFormData(prev => ({ ...prev, imageUrl: data.secure_url }));
+      } else {
+        setError("Failed to upload image.");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError("Error uploading the image.");
+    } finally {
+      setUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  };
 
   const fetchMenu = async () => {
     try {
@@ -134,6 +167,25 @@ export default function MenuManagementPage() {
     }
   };
 
+  const handleToggleAvailability = async (item: MenuItem) => {
+    // Optimistic UI update for immediate feedback
+    setItems(items.map(i => i._id === item._id ? { ...i, isAvailable: !i.isAvailable } : i));
+    
+    try {
+      const res = await fetch("/api/admin/menu", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...item, id: item._id, isAvailable: !item.isAvailable }),
+      });
+      if (!res.ok) {
+        fetchMenu(); // Revert on failure
+      }
+    } catch (err) {
+      console.error("Toggle failed:", err);
+      fetchMenu(); // Revert on failure
+    }
+  };
+
   const filteredItems = items.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -200,12 +252,24 @@ export default function MenuManagementPage() {
                 </div>
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${item.isAvailable ? "bg-green-500" : "bg-red-500"}`} />
-                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500">
-                      {item.isAvailable ? "Available" : "Unavailable"}
-                    </span>
-                  </div>
+                  <button 
+                    onClick={() => handleToggleAvailability(item)}
+                    title={item.isAvailable ? "Click to mark as disabled/sold out" : "Click to mark as available"}
+                    className="flex items-center gap-3 p-1 rounded-xl hover:bg-white/5 transition-all group/toggle"
+                  >
+                    {/* Modern Toggle Switch UI */}
+                    <div className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out ${item.isAvailable ? 'bg-green-500 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-white/10 border-white/5'}`}>
+                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-300 ease-in-out flex items-center justify-center ${item.isAvailable ? 'translate-x-5' : 'translate-x-0'}`}>
+                      </span>
+                    </div>
+                    {/* Text Label */}
+                    <div className="flex flex-col items-start leading-none opacity-80 group-hover/toggle:opacity-100 transition-opacity">
+                      <span className={`text-[11px] font-black uppercase tracking-widest ${item.isAvailable ? "text-green-500" : "text-gray-500"}`}>
+                        {item.isAvailable ? "Available" : "Unavailable"}
+                      </span>
+                      <span className="text-[9px] font-bold text-gray-600 uppercase tracking-wider mt-0.5">Click to toggle</span>
+                    </div>
+                  </button>
                   <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(item)} className="hover:bg-primary/10 hover:text-primary">
                       <Edit2 className="w-4 h-4" />
@@ -273,52 +337,40 @@ export default function MenuManagementPage() {
                     <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Brief description..." />
                   </div>
 
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Image URL (Optional)</label>
+                    <Input value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://example.com/image.png (or use upload below)" />
+                  </div>
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 py-2">
-                    {/* Cloudinary Upload for Item Image */}
-                    <CldUploadWidget 
-                      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-                      onSuccess={(result: any) => setFormData({...formData, imageUrl: result.info.secure_url})}
-                      options={{
-                        sources: ["local"],
-                        multiple: false,
-                        cropping: false,
-                        clientAllowedFormats: ["jpg", "png", "jpeg"],
-                        maxFileSize: 5000000,
-                        showAdvancedOptions: false,
-                        styles: {
-                          palette: {
-                            window: "#000000",
-                            windowBorder: "#222222",
-                            tabIcon: "#FF6600",
-                            menuIcons: "#FFFFFF",
-                            textDark: "#000000",
-                            textLight: "#FFFFFF",
-                            link: "#FF6600",
-                            action: "#FF6600",
-                            inactiveTabIcon: "#888888",
-                            error: "#FF0000",
-                            inProgress: "#FF6600",
-                            complete: "#20B832",
-                            sourceBg: "#111111"
-                          }
-                        }
-                      }}
+                    <input 
+                      type="file" 
+                      accept="image/png, image/jpeg, image/jpg" 
+                      className="hidden" 
+                      ref={imageInputRef} 
+                      onChange={handleImageUpload} 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className={`flex-1 flex items-center justify-center gap-2 h-14 rounded-2xl border-2 border-dashed transition-all ${
+                        formData.imageUrl 
+                          ? "bg-green-500/10 border-green-500/30 text-green-500" 
+                          : "bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                      }`}
                     >
-                      {({ open }) => (
-                        <button 
-                          type="button" 
-                          onClick={() => open()}
-                          className={`flex-1 flex items-center justify-center gap-2 h-14 rounded-2xl border-2 border-dashed transition-all ${
-                            formData.imageUrl 
-                              ? "bg-green-500/10 border-green-500/30 text-green-500" 
-                              : "bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-                          }`}
-                        >
-                          {formData.imageUrl ? <Check className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
-                          <span className="text-sm font-black">{formData.imageUrl ? "Image Ready" : "Upload Food Image"}</span>
-                        </button>
+                      {uploadingImage ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : formData.imageUrl ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <ImageIcon className="w-5 h-5" />
                       )}
-                    </CldUploadWidget>
+                      <span className="text-sm font-black">
+                        {uploadingImage ? "Uploading..." : formData.imageUrl ? "Image Ready" : "Upload Food Image"}
+                      </span>
+                    </button>
 
                     <div className="flex items-center justify-between sm:justify-start gap-3 bg-white/5 border border-white/5 px-4 h-14 rounded-2xl w-full sm:w-auto">
                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Available</span>

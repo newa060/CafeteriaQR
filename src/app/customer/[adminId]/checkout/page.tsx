@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
@@ -17,12 +17,14 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/context/AuthContext";
-import { CldUploadWidget } from "next-cloudinary";
 
 interface MenuItem {
   _id: string;
   name: string;
+  description: string;
   price: number;
+  category: string;
+  imageUrl?: string;
 }
 
 interface Cafeteria {
@@ -32,6 +34,16 @@ interface Cafeteria {
   timeSlots: string[];
   isActive: boolean;
 }
+
+const formatTime12h = (time24: string) => {
+  if (!time24) return "";
+  const [h, m] = time24.split(":");
+  if (!h || !m) return time24;
+  let hour = parseInt(h, 10);
+  const period = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, "0")}:${m} ${period}`;
+};
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -53,6 +65,38 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Custom uploader states
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingReceipt(true);
+    const body = new FormData();
+    body.append("file", file);
+    body.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "CafeteriaQR");
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "da5jaib7d"}/image/upload`, {
+        method: "POST",
+        body,
+      });
+      const data = await res.json();
+      if (data.secure_url) {
+        setScreenshotUrl(data.secure_url);
+      } else {
+        console.error("Failed to upload screenshot");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+    } finally {
+      setUploadingReceipt(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     // Load cart from local storage
@@ -209,7 +253,7 @@ export default function CheckoutPage() {
                     : "bg-white/5 border-white/5 text-gray-400 hover:text-white"
                 } ${!cafeteria.isActive ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                {slot}
+                {formatTime12h(slot)}
               </button>
             ))}
             <button
@@ -309,59 +353,40 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Screenshot Upload */}
-                <CldUploadWidget 
-                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-                  onSuccess={(result: any) => setScreenshotUrl(result.info.secure_url)}
-                  options={{
-                    sources: ["local"],
-                    multiple: false,
-                    cropping: false,
-                    clientAllowedFormats: ["jpg", "png", "jpeg"],
-                    maxFileSize: 5000000,
-                    showAdvancedOptions: false,
-                    styles: {
-                      palette: {
-                        window: "#000000",
-                        windowBorder: "#222222",
-                        tabIcon: "#FF6600",
-                        menuIcons: "#FFFFFF",
-                        textDark: "#000000",
-                        textLight: "#FFFFFF",
-                        link: "#FF6600",
-                        action: "#FF6600",
-                        inactiveTabIcon: "#888888",
-                        error: "#FF0000",
-                        inProgress: "#FF6600",
-                        complete: "#20B832",
-                        sourceBg: "#111111"
-                      }
-                    }
-                  }}
+                <input 
+                  type="file" 
+                  accept="image/png, image/jpeg, image/jpg" 
+                  className="hidden" 
+                  ref={imageInputRef} 
+                  onChange={handleReceiptUpload} 
+                />
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={uploadingReceipt}
+                  className={`w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all ${
+                    screenshotUrl 
+                      ? "bg-green-500/10 border-green-500/50 text-green-500" 
+                      : "bg-white/5 border-white/10 text-gray-400 hover:text-white"
+                  }`}
                 >
-                  {({ open }) => (
-                    <button
-                      type="button"
-                      onClick={() => open()}
-                      className={`w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all ${
-                        screenshotUrl 
-                          ? "bg-green-500/10 border-green-500/50 text-green-500" 
-                          : "bg-white/5 border-white/10 text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {screenshotUrl ? (
-                        <>
-                          <CheckCircle2 className="w-5 h-5" />
-                          <span>Screenshot Uploaded</span>
-                        </>
-                      ) : (
-                        <>
-                          <ImageIcon className="w-5 h-5" />
-                          <span>Upload Payment Screenshot</span>
-                        </>
-                      )}
-                    </button>
+                  {uploadingReceipt ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Uploading...</span>
+                    </>
+                  ) : screenshotUrl ? (
+                    <>
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>Screenshot Ready</span>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-5 h-5" />
+                      <span>Upload Payment Screenshot</span>
+                    </>
                   )}
-                </CldUploadWidget>
+                </button>
               </div>
             </CardContent>
           </Card>
