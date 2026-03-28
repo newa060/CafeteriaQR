@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useRef } from "react";
+import { motion } from "framer-motion";
 import QRCode from "react-qr-code";
+
 import { 
   Download, 
   Share2, 
