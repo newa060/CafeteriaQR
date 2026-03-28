@@ -46,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-[#111111] border-r border-white/5 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-40 w-64 bg-[#111111] border-r border-white/5 transform transition-transform duration-300 ease-in-out lg:translate-x-0
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
         <div className="h-full flex flex-col p-6">
@@ -78,15 +78,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
 
           <div className="pt-6 border-t border-white/5 space-y-4">
-            <div className="flex items-center gap-3 px-4 py-2">
-              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center">
+            <Link 
+              href="/admin/settings"
+              className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 rounded-xl transition-colors group"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center group-hover:border-primary/50 transition-colors">
                 <span className="text-primary font-bold">{user?.name?.charAt(0) || "A"}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">{user?.name || "Admin User"}</p>
+                <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{user?.name || "Admin User"}</p>
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
               </div>
-            </div>
+            </Link>
             <Button 
               variant="ghost" 
               className="w-full justify-start text-red-500 hover:text-red-400 hover:bg-red-500/10"
@@ -105,7 +109,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 lg:pl-64">
         <div className="flex-1 p-6 lg:p-8 pt-20 lg:pt-8 overflow-y-auto overflow-x-hidden">
           {children}
         </div>
