@@ -119,7 +119,7 @@ export default function CustomerMenuPage() {
     <div className="pb-24 max-w-lg mx-auto bg-background text-white min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Menu</h1>
+        <h1 className="text-xl font-bold text-primary">Menu</h1>
         <div className="flex items-center gap-2">
           <div className="relative">
             <button 
@@ -152,27 +152,30 @@ export default function CustomerMenuPage() {
       />
 
 
-      {/* Hero / Info */}
-      <div className="p-4 pt-6">
-        <h2 className="text-3xl font-bold mb-1">{cafeteria?.name || "Cafeteria"}</h2>
-        <p className="text-gray-400 text-sm">Delicious meals pre-prepared for you.</p>
-      </div>
+      {/* Sticky Banner & Categories */}
+      <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-md border-b border-white/5 shadow-xl">
+        {/* Hero / Info */}
+        <div className="p-4 pt-6">
+          <h2 className="text-3xl font-black mb-1 tracking-tight">{cafeteria?.name || "Cafeteria"}</h2>
+          <p className="text-gray-400 text-sm font-medium">Delicious meals pre-prepared for you.</p>
+        </div>
 
-      {/* Categories */}
-      <div className="overflow-x-auto no-scrollbar flex gap-2 px-4 py-4">
-        {categories.map(category => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
-              activeCategory === category 
-                ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                : "bg-white/5 text-gray-400 hover:text-white"
-            }`}
-          >
-            {category}
-          </button>
-        ))}
+        {/* Categories */}
+        <div className="overflow-x-auto no-scrollbar flex gap-2 px-4 pb-4">
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs font-black uppercase tracking-widest transition-all border ${
+                activeCategory === category 
+                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105" 
+                  : "bg-white/5 border-white/10 text-gray-500 hover:text-white"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Menu Grid */}

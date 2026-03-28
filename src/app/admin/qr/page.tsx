@@ -50,7 +50,7 @@ export default function QRGenerationPage() {
         ctx.drawImage(img, 20, 20);
         const pngFile = canvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
-        downloadLink.download = `CPS_QR_${user?.name?.replace(/\s+/g, '_')}.png`;
+        downloadLink.download = `MenuQR_QR_${user?.name?.replace(/\s+/g, '_')}.png`;
         downloadLink.href = pngFile;
         downloadLink.click();
       }

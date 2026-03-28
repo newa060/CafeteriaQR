@@ -191,6 +191,8 @@ export default function MenuManagementPage() {
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const uniqueCategories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
   return (
     <div className="space-y-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -327,8 +329,28 @@ export default function MenuManagementPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Category</label>
+                  <div className="space-y-3">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Category</label>
+                      {uniqueCategories.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-1">
+                          {uniqueCategories.map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setFormData({...formData, category: cat})}
+                              className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                formData.category === cat 
+                                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105" 
+                                  : "bg-white/5 border-white/10 text-gray-500 hover:text-white hover:border-white/20"
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <Input value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} placeholder="e.g. Burgers, Drinks, Desserts" required />
                   </div>
 

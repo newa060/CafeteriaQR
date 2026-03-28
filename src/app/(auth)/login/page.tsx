@@ -96,14 +96,41 @@ function LoginForm() {
   };
 
   const handleOtpChange = (element: HTMLInputElement, index: number) => {
-    if (isNaN(Number(element.value))) return false;
+    const value = element.value.replace(/[^0-9]/g, "");
+    if (!value && element.value !== "") return; // Block non-numeric
 
-    setOtp([...otp.map((d, idx) => (idx === index ? element.value : d))]);
+    const newOtp = [...otp];
+    newOtp[index] = value.substring(value.length - 1);
+    setOtp(newOtp);
 
     // Focus next input
-    if (element.nextSibling && element.value !== "") {
+    if (value && element.nextSibling) {
       (element.nextSibling as HTMLInputElement).focus();
     }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      const prev = (e.currentTarget.previousSibling as HTMLInputElement);
+      if (prev) prev.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const data = e.clipboardData.getData("text").replace(/[^0-9]/g, "").substring(0, 6);
+    if (!data) return;
+
+    const newOtp = [...otp];
+    data.split("").forEach((char, i) => {
+      if (i < 6) newOtp[i] = char;
+    });
+    setOtp(newOtp);
+
+    // Focus last filled box
+    const nextIndex = Math.min(data.length, 5);
+    const target = e.currentTarget.children[nextIndex] as HTMLInputElement;
+    if (target) target.focus();
   };
 
   return (
@@ -200,14 +227,17 @@ function LoginForm() {
                 >
                   <div className="text-center space-y-2">
                     <p className="text-sm text-gray-400">OTP entry field</p>
-                    <div className="flex justify-between gap-2">
+                    <div className="flex justify-between gap-2" onPaste={handlePaste}>
                       {otp.map((data, index) => (
                         <input
                           key={index}
-                          type="text"
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           maxLength={1}
                           value={data}
                           onChange={(e) => handleOtpChange(e.target, index)}
+                          onKeyDown={(e) => handleKeyDown(e, index)}
                           onFocus={(e) => e.target.select()}
                           className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-white/5 border border-white/10 rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none text-white transition-all"
                         />

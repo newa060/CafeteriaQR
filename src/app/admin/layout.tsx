@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#0d0d0d] text-white flex">
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0d0d0d]/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight">CPS <span className="text-secondary font-medium">Admin</span></h1>
+        <h1 className="text-xl font-bold tracking-tight text-primary">Admin</h1>
         <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
         </Button>
@@ -51,7 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       `}>
         <div className="h-full flex flex-col p-6 pt-24 lg:pt-6">
           <div className="mb-10 px-2 lg:block hidden">
-            <h1 className="text-2xl font-bold tracking-tight">CPS <span className="text-[#ff6b00]">Admin</span></h1>
+            <h1 className="text-2xl font-bold tracking-tight text-primary underline underline-offset-8 decoration-white/10">Admin</h1>
             <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest">Management Panel</p>
           </div>
 

@@ -35,7 +35,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight">CPS <span className="text-primary font-medium">Superadmin</span></h1>
+        <h1 className="text-xl font-bold tracking-tight text-primary">Superadmin</h1>
         <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
         </Button>
@@ -50,7 +50,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
           <div className="mb-10 px-2 lg:block hidden">
             <div className="flex items-center gap-2 mb-1">
               <ShieldCheck className="w-6 h-6 text-primary" />
-              <h1 className="text-2xl font-bold tracking-tight">CPS <span className="text-white">Super</span></h1>
+              <h1 className="text-2xl font-bold tracking-tight text-primary border-b-2 border-white/10 pb-1 leading-none">Superadmin</h1>
             </div>
             <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">Root Access Panel</p>
           </div>

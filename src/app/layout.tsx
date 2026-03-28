@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cafeteria Pre-Order System (CPS)",
+  title: "MenuQR - Cafeteria System",
   description: "A specialized QR-based pre-ordering system for school and office cafeterias.",
 };
 

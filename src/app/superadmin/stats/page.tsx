@@ -107,7 +107,7 @@ export default function PlatformStatsPage() {
           </div>
         </div>
         <h1 className="text-5xl font-black text-white leading-none">Platform <span className="text-primary italic">Stats</span></h1>
-        <p className="text-gray-500 font-medium mt-3 text-lg">Real-time performance metrics across the entire CPS network.</p>
+        <p className="text-gray-500 font-medium mt-3 text-lg">Real-time performance metrics across the entire MenuQR network.</p>
       </header>
 
       {/* Metric Cards */}
