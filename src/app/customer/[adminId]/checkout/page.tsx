@@ -42,6 +42,11 @@ export default function CheckoutPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
+  const [isCustomTime, setIsCustomTime] = useState(false);
+  const [customHour, setCustomHour] = useState("09");
+  const [customMinute, setCustomMinute] = useState("00");
+  const [customPeriod, setCustomPeriod] = useState("AM");
+  const [customTimeValue, setCustomTimeValue] = useState("09:00");
   const [paymentName, setPaymentName] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [loading, setLoading] = useState(true);
@@ -81,12 +86,28 @@ export default function CheckoutPage() {
     fetchData();
   }, [adminId, router]);
 
+  useEffect(() => {
+    if (isCustomTime) {
+      let h = parseInt(customHour);
+      if (customPeriod === "PM" && h !== 12) h += 12;
+      if (customPeriod === "AM" && h === 12) h = 0;
+      setCustomTimeValue(`${h.toString().padStart(2, '0')}:${customMinute}`);
+    }
+  }, [customHour, customMinute, customPeriod, isCustomTime]);
+
   const cartItems = menuItems.filter(item => cart[item._id] > 0);
   const totalAmount = cartItems.reduce((acc, item) => acc + (item.price * cart[item._id]), 0);
 
   const handleSubmit = async () => {
-    if (!selectedTimeSlot) {
-      setError("Please select a time slot");
+    const finalTimeSlot = isCustomTime ? customTimeValue : selectedTimeSlot;
+    
+    if (!finalTimeSlot) {
+      setError("Please select or specify a time slot");
+      return;
+    }
+
+    if (isCustomTime && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(customTimeValue)) {
+      setError("Please enter a valid time (HH:MM)");
       return;
     }
     // Logic for 10-minute constraint is handled in the API, but let's check it briefly here too
@@ -104,7 +125,7 @@ export default function CheckoutPage() {
           price: item.price
         })),
         totalAmount,
-        timeSlot: selectedTimeSlot,
+        timeSlot: finalTimeSlot,
         paymentScreenshotUrl: screenshotUrl,
         paymentName: paymentName || user?.name
       };
@@ -161,9 +182,12 @@ export default function CheckoutPage() {
             {cafeteria?.timeSlots.map(slot => (
               <button
                 key={slot}
-                onClick={() => setSelectedTimeSlot(slot)}
+                onClick={() => {
+                  setSelectedTimeSlot(slot);
+                  setIsCustomTime(false);
+                }}
                 className={`flex items-center justify-center h-12 rounded-xl border text-sm font-medium transition-all ${
-                  selectedTimeSlot === slot 
+                  !isCustomTime && selectedTimeSlot === slot 
                     ? "bg-primary/20 border-primary text-primary" 
                     : "bg-white/5 border-white/5 text-gray-400 hover:text-white"
                 }`}
@@ -171,7 +195,69 @@ export default function CheckoutPage() {
                 {slot}
               </button>
             ))}
+            <button
+              onClick={() => {
+                setIsCustomTime(true);
+                setSelectedTimeSlot("");
+              }}
+              className={`flex items-center justify-center h-12 rounded-xl border text-sm font-medium transition-all ${
+                isCustomTime 
+                  ? "bg-primary/20 border-primary text-primary" 
+                  : "bg-white/5 border-white/5 text-gray-400 hover:text-white"
+              }`}
+            >
+              Custom
+            </button>
           </div>
+
+          {isCustomTime && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }} 
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3 pt-2"
+            >
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Choose your time</label>
+              <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl p-2 h-16 w-max">
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] text-gray-600 font-bold uppercase mb-1">Hour</span>
+                  <select 
+                    value={customHour}
+                    onChange={(e) => setCustomHour(e.target.value)}
+                    className="bg-transparent text-white font-black text-2xl px-4 outline-none appearance-none cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => (
+                      <option key={h} value={h.toString().padStart(2, '0')} className="bg-[#0a0a0a] text-white underline">{h.toString().padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="text-2xl font-black text-primary px-2 self-end pb-1">:</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] text-gray-600 font-bold uppercase mb-1">Min</span>
+                  <select 
+                    value={customMinute}
+                    onChange={(e) => setCustomMinute(e.target.value)}
+                    className="bg-transparent text-white font-black text-2xl px-4 outline-none appearance-none cursor-pointer"
+                  >
+                    {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '59'].map(m => (
+                      <option key={m} value={m} className="bg-[#0a0a0a] text-white">{m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="w-px h-10 bg-white/10 mx-4 self-end mb-2" />
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] text-gray-600 font-bold uppercase mb-1">Period</span>
+                  <select 
+                    value={customPeriod}
+                    onChange={(e) => setCustomPeriod(e.target.value)}
+                    className="bg-transparent text-primary font-black text-2xl px-4 outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="AM" className="bg-[#0a0a0a] text-white uppercase">AM</option>
+                    <option value="PM" className="bg-[#0a0a0a] text-white uppercase">PM</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </section>
 
         {/* Payment Section */}
@@ -242,11 +328,11 @@ export default function CheckoutPage() {
         <section className="bg-white/5 rounded-2xl p-4 space-y-3">
           <div className="flex justify-between items-center text-sm text-gray-400">
             <span>Subtotal</span>
-            <span>${totalAmount.toFixed(2)}</span>
+            <span>RS {totalAmount}</span>
           </div>
           <div className="flex justify-between items-center text-lg font-bold">
             <span>Total Amount</span>
-            <span className="text-primary">${totalAmount.toFixed(2)}</span>
+            <span className="text-primary">RS {totalAmount}</span>
           </div>
         </section>
 
@@ -260,11 +346,15 @@ export default function CheckoutPage() {
         {/* Submit */}
         <Button 
           className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20" 
-          disabled={submitting || !selectedTimeSlot}
+          disabled={submitting || (!isCustomTime && !selectedTimeSlot) || (isCustomTime && !customTimeValue)}
           onClick={handleSubmit}
         >
           {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "Complete Order"}
         </Button>
+      </div>
+      <div className="py-12 flex flex-col items-center justify-center opacity-30">
+        <div className="h-px w-24 bg-white/10 mb-4" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
       </div>
     </div>
   );

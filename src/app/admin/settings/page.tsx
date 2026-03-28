@@ -31,7 +31,9 @@ export default function AdminSettingsPage() {
   const [name, setName] = useState("");
   const [paymentQRUrl, setPaymentQRUrl] = useState("");
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
-  const [newSlot, setNewSlot] = useState("");
+  const [newSlotHour, setNewSlotHour] = useState("09");
+  const [newSlotMinute, setNewSlotMinute] = useState("00");
+  const [newSlotPeriod, setNewSlotPeriod] = useState("AM");
 
   useEffect(() => {
     const fetchCafeteria = async () => {
@@ -64,9 +66,13 @@ export default function AdminSettingsPage() {
   }, []);
 
   const handleAddSlot = () => {
-    if (newSlot && !timeSlots.includes(newSlot)) {
-      setTimeSlots([...timeSlots, newSlot].sort());
-      setNewSlot("");
+    let hour = parseInt(newSlotHour);
+    if (newSlotPeriod === "PM" && hour !== 12) hour += 12;
+    if (newSlotPeriod === "AM" && hour === 12) hour = 0;
+    
+    const slot = `${hour.toString().padStart(2, '0')}:${newSlotMinute}`;
+    if (slot && !timeSlots.includes(slot)) {
+      setTimeSlots([...timeSlots, slot].sort());
     }
   };
 
@@ -208,15 +214,39 @@ export default function AdminSettingsPage() {
           </div>
           <Card className="bg-[#111111] border-white/5 p-8 shadow-2xl">
             <div className="space-y-6">
-              <div className="flex gap-4">
-                <Input 
-                  type="time" 
-                  value={newSlot} 
-                  onChange={(e) => setNewSlot(e.target.value)}
-                  className="max-w-[180px]"
-                />
-                <Button type="button" onClick={handleAddSlot} className="h-12 px-6 rounded-xl font-bold">
-                  <Plus className="w-5 h-5 mr-2" />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center bg-white/5 border border-white/10 rounded-2xl p-1.5 h-14">
+                  <select 
+                    value={newSlotHour}
+                    onChange={(e) => setNewSlotHour(e.target.value)}
+                    className="bg-transparent text-white font-bold px-4 outline-none appearance-none cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => (
+                      <option key={h} value={h.toString().padStart(2, '0')} className="bg-[#0a0a0a] text-white underline">{h.toString().padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                  <span className="text-gray-500 font-black px-1">:</span>
+                  <select 
+                    value={newSlotMinute}
+                    onChange={(e) => setNewSlotMinute(e.target.value)}
+                    className="bg-transparent text-white font-bold px-4 outline-none appearance-none cursor-pointer"
+                  >
+                    {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
+                      <option key={m} value={m} className="bg-[#0a0a0a] text-white">{m}</option>
+                    ))}
+                  </select>
+                  <div className="w-px h-6 bg-white/10 mx-2" />
+                  <select 
+                    value={newSlotPeriod}
+                    onChange={(e) => setNewSlotPeriod(e.target.value)}
+                    className="bg-transparent text-primary font-black px-4 outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="AM" className="bg-[#0a0a0a] text-white uppercase">AM</option>
+                    <option value="PM" className="bg-[#0a0a0a] text-white uppercase">PM</option>
+                  </select>
+                </div>
+                <Button type="button" onClick={handleAddSlot} className="h-14 px-8 rounded-2xl font-black text-lg shadow-xl shadow-primary/20">
+                  <Plus className="w-6 h-6 mr-2" />
                   Add Slot
                 </Button>
               </div>

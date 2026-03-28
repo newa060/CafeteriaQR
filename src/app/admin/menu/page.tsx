@@ -196,7 +196,7 @@ export default function MenuManagementPage() {
                     <h3 className="text-xl font-black text-white leading-tight">{item.name}</h3>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
                   </div>
-                  <span className="text-2xl font-black text-primary">${item.price.toFixed(2)}</span>
+                  <span className="text-2xl font-black text-primary">RS {item.price}</span>
                 </div>
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -258,7 +258,7 @@ export default function MenuManagementPage() {
                       <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Classic Burger" required />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Price ($)</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Price (RS)</label>
                       <Input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="0.00" required />
                     </div>
                   </div>

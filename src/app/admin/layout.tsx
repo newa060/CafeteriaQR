@@ -95,6 +95,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <LogOut className="w-5 h-5 mr-3" />
               Sign Out
             </Button>
+            
+            <div className="pt-4 flex flex-col items-center justify-center opacity-20">
+              <div className="h-px w-full bg-white/10 mb-4" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-center">Powered by MenuQR</p>
+            </div>
           </div>
         </div>
       </aside>

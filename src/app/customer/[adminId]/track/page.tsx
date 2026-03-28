@@ -162,12 +162,12 @@ export default function OrderTrackPage() {
                     <Badge variant="outline" className="bg-white/5 border-white/10">{item.quantity}x</Badge>
                     <span className="font-medium">{item.name}</span>
                   </div>
-                  <span className="text-sm text-gray-400">${(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="text-sm text-gray-400">RS {item.price * item.quantity}</span>
                 </div>
               ))}
               <div className="pt-4 border-t border-white/5 flex justify-between items-center text-lg font-bold">
                 <span>Total</span>
-                <span className="text-primary">${order.totalAmount.toFixed(2)}</span>
+                <span className="text-primary">RS {order.totalAmount}</span>
               </div>
             </CardContent>
           </Card>
@@ -180,6 +180,10 @@ export default function OrderTrackPage() {
         >
           Back to Menu
         </Button>
+      </div>
+      <div className="py-12 flex flex-col items-center justify-center opacity-30">
+        <div className="h-px w-24 bg-white/10 mb-4" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
       </div>
     </div>
   );

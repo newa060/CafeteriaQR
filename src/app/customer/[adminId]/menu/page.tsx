@@ -187,7 +187,7 @@ export default function CustomerMenuPage() {
                     <p className="text-xs text-gray-500 line-clamp-1 mt-1">{item.description}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-primary font-bold text-lg">${item.price.toFixed(2)}</span>
+                    <span className="text-primary font-bold text-lg">RS {item.price}</span>
                     
                     {/* Add to Cart Logic */}
                     <div className="flex items-center gap-3">
@@ -263,6 +263,10 @@ export default function CustomerMenuPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <div className="py-12 flex flex-col items-center justify-center opacity-30">
+        <div className="h-px w-24 bg-white/10 mb-4" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
+      </div>
     </div>
   );
 }
