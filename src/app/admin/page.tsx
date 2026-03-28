@@ -85,9 +85,28 @@ export default function AdminDashboard() {
     }
   };
 
-  // Calculate Bulk/Total Items for the "Day's Total"
+  // Advanced Grouping for Kitchen View Breakdown
+  const bulkBreakdown = orders
+    .filter(o => o.status === "accepted" || o.status === "preparing")
+    .reduce((acc: { [key: string]: { total: number; orders: any[] } }, order) => {
+      order.items.forEach(item => {
+        if (!acc[item.name]) {
+          acc[item.name] = { total: 0, orders: [] };
+        }
+        acc[item.name].total += item.quantity;
+        acc[item.name].orders.push({
+          orderId: order._id,
+          customerName: order.customerName,
+          quantity: item.quantity,
+          timeSlot: order.timeSlot,
+          status: order.status
+        });
+      });
+      return acc;
+    }, {});
+
   const bulkTotals = orders
-    .filter(o => o.status !== "cancelled")
+    .filter(o => o.status !== "cancelled" && o.status !== "pending" && o.status !== "ready")
     .reduce((acc: { [key: string]: number }, order) => {
       order.items.forEach(item => {
         acc[item.name] = (acc[item.name] || 0) + item.quantity;
@@ -95,7 +114,7 @@ export default function AdminDashboard() {
       return acc;
     }, {});
 
-  const totalItemCount = Object.values(bulkTotals).reduce((a, b) => a + b, 0);
+  const totalItemCount = Object.values(bulkTotals).reduce((a: number, b: number) => a + b, 0);
 
   if (loading) {
     return (
@@ -168,7 +187,7 @@ export default function AdminDashboard() {
               >
                 {orders
                   .filter(o => 
-                    activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
+                    activeTab === "individual" ? o.status === "pending" || o.status === "accepted" : o.status !== "pending" && o.status !== "accepted"
                   ).map((order) => (
                   <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
                     <CardContent className="p-7 space-y-6">
@@ -233,13 +252,24 @@ export default function AdminDashboard() {
                               </Button>
                             </div>
                           </div>
+                        ) : order.status === "accepted" ? (
+                          <div className="pt-2">
+                            <Button 
+                              className="w-full h-14 bg-green-600 hover:bg-green-500 text-white text-xl font-black rounded-2xl shadow-xl shadow-green-500/20 flex items-center justify-center gap-2"
+                              onClick={() => updateOrderStatus(order._id, "ready")}
+                            >
+                              <CheckCircle2 className="w-6 h-6" />
+                              MARK READY
+                            </Button>
+                            <p className="text-[10px] font-extrabold text-green-500/50 uppercase tracking-widest text-center mt-3">Ready for student to pick up?</p>
+                          </div>
                         ) : (
                           <div className="py-2 text-center">
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Final Status</p>
                             <p className={`text-xl font-black mt-1 ${
-                              order.status === 'accepted' ? 'text-green-500' : 'text-red-500'
+                              order.status === 'ready' ? 'text-green-500' : 'text-red-500'
                             }`}>
-                              {order.status === 'accepted' ? 'ORDER ACCEPTED' : 'ORDER REJECTED'}
+                              {order.status === 'ready' ? 'ORDER READY' : 'ORDER REJECTED'}
                             </p>
                           </div>
                         )}
@@ -275,7 +305,7 @@ export default function AdminDashboard() {
                   </Card>
                   <Card className="bg-white/5 border-white/5 text-center py-6 md:py-10">
                     <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
-                    <p className="text-4xl md:text-6xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "ready").length}</p>
+                    <p className="text-4xl md:text-6xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "pending" && o.status !== "ready").length}</p>
                   </Card>
                 </div>
 
@@ -286,15 +316,36 @@ export default function AdminDashboard() {
                     <p className="text-sm md:text-base text-gray-500 mt-1">Combined totals of all items currently ordered by students.</p>
                   </div>
                   <CardContent className="p-4 md:p-8 space-y-3 md:space-y-4">
-                    {Object.entries(bulkTotals).map(([name, count]) => (
-                      <div key={name} className="flex justify-between items-center bg-white/5 p-4 md:p-5 rounded-2xl border border-white/5 shadow-inner">
-                        <span className="text-base md:text-lg font-bold text-white tracking-tight">{name}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl md:text-3xl font-black text-primary">{String(count)}x</span>
+                    {Object.entries(bulkBreakdown).map(([name, data]) => (
+                      <div key={name} className="flex flex-col bg-white/5 rounded-2xl border border-white/5 shadow-inner overflow-hidden">
+                        <div className="flex justify-between items-center p-4 md:p-5">
+                          <span className="text-base md:text-lg font-bold text-white tracking-tight">{name}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl md:text-3xl font-black text-primary">{String(data.total)}x</span>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-black/20 border-t border-white/5 p-4 space-y-3">
+                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Individual Orders</p>
+                          {data.orders.map((subOrder: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between bg-white/5 rounded-xl p-3 border border-white/5">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-white">{subOrder.customerName}</span>
+                                <span className="text-[10px] font-medium text-gray-500">Qty: {subOrder.quantity} • {subOrder.timeSlot}</span>
+                              </div>
+                              <Button 
+                                variant="outline"
+                                className="h-9 px-4 text-[10px] font-black uppercase text-green-500 border-green-500/20 hover:bg-green-500/10 rounded-lg"
+                                onClick={() => updateOrderStatus(subOrder.orderId, "ready")}
+                              >
+                                Mark Ready
+                              </Button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
-                    {Object.keys(bulkTotals).length === 0 && (
+                    {Object.keys(bulkBreakdown).length === 0 && (
                       <div className="py-10 text-center text-gray-500 font-bold italic opacity-50">
                         No items to cook right now.
                       </div>
