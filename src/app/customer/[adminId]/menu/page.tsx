@@ -118,13 +118,8 @@ export default function CustomerMenuPage() {
   return (
     <div className="pb-24 max-w-lg mx-auto bg-background text-white min-h-screen">
       {/* Header */}
-<<<<<<< HEAD
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-primary">Menu</h1>
-=======
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-3.5 sm:p-4 flex items-center justify-between">
         <h1 className="text-lg sm:text-xl font-bold tracking-tight">Canteen <span className="text-primary">Menu</span></h1>
->>>>>>> 7c6dbd55af6ea4348ccd0d8ee02219da12d74c09
         <div className="flex items-center gap-2">
           <div className="relative">
             <button 
@@ -157,22 +152,21 @@ export default function CustomerMenuPage() {
       />
 
 
-<<<<<<< HEAD
       {/* Sticky Banner & Categories */}
-      <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-md border-b border-white/5 shadow-xl">
+      <div className="sticky top-[64px] sm:top-[72px] z-40 bg-background/95 backdrop-blur-md border-b border-white/5 shadow-xl">
         {/* Hero / Info */}
-        <div className="p-4 pt-6">
-          <h2 className="text-3xl font-black mb-1 tracking-tight">{cafeteria?.name || "Cafeteria"}</h2>
-          <p className="text-gray-400 text-sm font-medium">Delicious meals pre-prepared for you.</p>
+        <div className="p-4 pt-6 text-center sm:text-left">
+          <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-1">{cafeteria?.name || "Cafeteria"}</h2>
+          <p className="text-gray-500 text-xs sm:text-sm font-medium">Delicious meals pre-prepared for you.</p>
         </div>
 
         {/* Categories */}
-        <div className="overflow-x-auto no-scrollbar flex gap-2 px-4 pb-4">
+        <div className="overflow-x-auto no-scrollbar flex gap-2 px-4 pb-4 py-2 sm:py-4 scroll-smooth">
           {categories.map(category => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs font-black uppercase tracking-widest transition-all border ${
+              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs sm:text-sm font-black uppercase tracking-widest transition-all border ${
                 activeCategory === category 
                   ? "bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105" 
                   : "bg-white/5 border-white/10 text-gray-500 hover:text-white"
@@ -182,29 +176,6 @@ export default function CustomerMenuPage() {
             </button>
           ))}
         </div>
-=======
-      {/* Hero / Info */}
-      <div className="p-4 pt-6 text-center sm:text-left">
-        <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-1">{cafeteria?.name || "Cafeteria"}</h2>
-        <p className="text-gray-500 text-xs sm:text-sm font-medium">Delicious meals pre-prepared for you.</p>
-      </div>
-
-      {/* Categories */}
-      <div className="overflow-x-auto no-scrollbar flex gap-2 px-4 py-4 scroll-smooth">
-        {categories.map(category => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`px-5 py-2 rounded-full whitespace-nowrap text-xs sm:text-sm font-black uppercase tracking-widest transition-all ${
-              activeCategory === category 
-                ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                : "bg-white/5 text-gray-500 hover:text-white"
-            }`}
-          >
-            {category}
-          </button>
-        ))}
->>>>>>> 7c6dbd55af6ea4348ccd0d8ee02219da12d74c09
       </div>
 
       {/* Menu Grid */}
