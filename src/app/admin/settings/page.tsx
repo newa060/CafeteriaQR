@@ -163,8 +163,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-10 max-w-4xl mx-auto pb-20">
       <div>
-        <h1 className="text-4xl font-extrabold text-white leading-none">Settings</h1>
-        <p className="text-gray-500 font-medium mt-2">Manage your cafeteria profile, payment logic, and operational hours.</p>
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-none">Settings</h1>
+        <p className="text-sm sm:text-base text-gray-500 font-medium mt-2">Manage your cafeteria profile, payment logic, and operational hours.</p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
@@ -172,9 +172,9 @@ export default function AdminSettingsPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
             <Info className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold text-white">Cafeteria Profile</h2>
+            <h2 className="text-lg font-bold text-white">Cafeteria Profile</h2>
           </div>
-          <Card className="bg-[#111111] border-white/5 p-8 shadow-2xl">
+          <Card className="bg-[#111111] border-white/5 p-5 sm:p-6 shadow-2xl rounded-2xl">
             <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Cafeteria Name</label>
@@ -209,9 +209,9 @@ export default function AdminSettingsPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
             <CreditCard className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold text-white">Payment Gateway</h2>
+            <h2 className="text-lg font-bold text-white">Payment Gateway</h2>
           </div>
-          <Card className="bg-[#111111] border-white/5 p-8 shadow-2xl">
+          <Card className="bg-[#111111] border-white/5 p-5 sm:p-6 shadow-2xl rounded-2xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div className="space-y-4">
                 <p className="text-sm text-gray-400 leading-relaxed">
@@ -228,14 +228,14 @@ export default function AdminSettingsPage() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wide transition-all"
+                  className="w-full h-11 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-bold tracking-wide transition-all"
                   onClick={() => qrInputRef.current?.click()}
                   disabled={uploadingQR}
                 >
                   {uploadingQR ? (
-                    <><Loader2 className="w-5 h-5 mr-3 animate-spin" /> Uploading...</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
                   ) : (
-                    <><QrCode className="w-5 h-5 mr-3" /> {paymentQRUrl ? "Change Payment QR" : "Upload Payment QR"}</>
+                    <><QrCode className="w-4 h-4 mr-2" /> {paymentQRUrl ? "Change QR" : "Upload QR"}</>
                   )}
                 </Button>
               </div>
@@ -267,43 +267,43 @@ export default function AdminSettingsPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
             <Clock className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold text-white">Daily Time Slots</h2>
+            <h2 className="text-lg font-bold text-white">Daily Time Slots</h2>
           </div>
-          <Card className="bg-[#111111] border-white/5 p-8 shadow-2xl">
+          <Card className="bg-[#111111] border-white/5 p-5 sm:p-6 shadow-2xl rounded-2xl">
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
-                <div className="flex-1 flex items-center justify-center sm:justify-start bg-white/5 border border-white/10 rounded-2xl p-1.5 h-14">
+                <div className="flex-1 flex items-center justify-center sm:justify-start bg-white/5 border border-white/10 rounded-xl p-1 h-11">
                   <select 
                     value={newSlotHour}
                     onChange={(e) => setNewSlotHour(e.target.value)}
-                    className="bg-transparent text-white font-bold px-4 outline-none appearance-none cursor-pointer"
+                    className="bg-transparent text-white font-bold px-3 outline-none appearance-none cursor-pointer text-sm"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => (
                       <option key={h} value={h.toString().padStart(2, '0')} className="bg-[#0a0a0a] text-white underline">{h.toString().padStart(2, '0')}</option>
                     ))}
                   </select>
-                  <span className="text-gray-500 font-black px-1">:</span>
+                  <span className="text-gray-500 font-bold px-1">:</span>
                   <select 
                     value={newSlotMinute}
                     onChange={(e) => setNewSlotMinute(e.target.value)}
-                    className="bg-transparent text-white font-bold px-4 outline-none appearance-none cursor-pointer"
+                    className="bg-transparent text-white font-bold px-3 outline-none appearance-none cursor-pointer text-sm"
                   >
                     {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
                       <option key={m} value={m} className="bg-[#0a0a0a] text-white">{m}</option>
                     ))}
                   </select>
-                  <div className="w-px h-6 bg-white/10 mx-2" />
+                  <div className="w-px h-5 bg-white/10 mx-1.5" />
                   <select 
                     value={newSlotPeriod}
                     onChange={(e) => setNewSlotPeriod(e.target.value)}
-                    className="bg-transparent text-primary font-black px-4 outline-none appearance-none cursor-pointer"
+                    className="bg-transparent text-primary font-bold px-3 outline-none appearance-none cursor-pointer text-sm"
                   >
                     <option value="AM" className="bg-[#0a0a0a] text-white uppercase">AM</option>
                     <option value="PM" className="bg-[#0a0a0a] text-white uppercase">PM</option>
                   </select>
                 </div>
-                <Button type="button" onClick={handleAddSlot} className="h-14 px-8 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 shrink-0 w-full sm:w-auto">
-                  <Plus className="w-6 h-6 mr-2" />
+                <Button type="button" onClick={handleAddSlot} className="h-11 px-6 rounded-xl font-bold text-base shadow-xl shadow-primary/20 shrink-0 w-full sm:w-auto">
+                  <Plus className="w-5 h-5 mr-2" />
                   Add Slot
                 </Button>
               </div>
@@ -351,10 +351,10 @@ export default function AdminSettingsPage() {
           
           <Button 
             type="submit" 
-            className="w-full h-16 rounded-2xl text-xl font-black shadow-2xl shadow-primary/30 flex items-center justify-center gap-3"
+            className="w-full h-14 rounded-xl text-lg font-bold shadow-2xl shadow-primary/30 flex items-center justify-center gap-3"
             disabled={submitting}
           >
-            {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "Save All Settings"}
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save All Settings"}
           </Button>
         </div>
       </form>

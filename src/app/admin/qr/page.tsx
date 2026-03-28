@@ -60,10 +60,10 @@ export default function QRGenerationPage() {
   };
 
   return (
-    <div className="space-y-10 max-w-4xl mx-auto">
+    <div className="space-y-10 max-w-4xl mx-auto pb-20">
       <div className="text-center md:text-left">
-        <h1 className="text-4xl font-extrabold text-white leading-none">Cafeteria QR Code</h1>
-        <p className="text-gray-500 font-medium mt-2">Generate and download your unique QR code for customers to scan and pre-order.</p>
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-none">Cafeteria QR Code</h1>
+        <p className="text-sm sm:text-base text-gray-500 font-medium mt-2">Generate and download your unique QR code for scan-to-order.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -73,7 +73,7 @@ export default function QRGenerationPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <Card className="p-8 bg-white rounded-3xl shadow-[0_20px_50px_rgba(255,107,0,0.15)] border-none">
+            <Card className="p-5 sm:p-8 bg-white rounded-3xl shadow-[0_20px_50px_rgba(255,107,0,0.15)] border-none">
               <div ref={qrRef}>
                 <QRCode 
                   value={customerUrl} 

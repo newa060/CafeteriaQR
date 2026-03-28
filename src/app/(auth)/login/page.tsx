@@ -149,25 +149,25 @@ function LoginForm() {
                   <Shield className="w-8 h-8 text-primary" />
                 </div>
               </div>
-              <h1 className="text-4xl font-bold tracking-tight text-white mb-2 leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2 leading-tight">
                 {isSuperAdminLogin ? "Super Admin" : "Admin"}{" "}
                 <span className="text-primary">Access</span>
               </h1>
-              <p className="text-gray-400">Sign in to the management portal</p>
+              <p className="text-sm sm:text-base text-gray-400">Sign in to the management portal</p>
             </>
           ) : (
             <>
-              <h1 className="text-4xl font-bold tracking-tight text-white mb-2 leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2 leading-tight">
                 School Cafeteria <br />
                 <span className="text-primary">Pre-Order</span>
               </h1>
-              <p className="text-gray-400">Enter your details to continue</p>
+              <p className="text-sm sm:text-base text-gray-400">Enter your details to continue</p>
             </>
           )}
         </div>
 
         <Card className="border-white/5 bg-black/40 backdrop-blur-xl shadow-2xl">
-          <CardContent className="pt-8 p-6 sm:p-8">
+          <CardContent className="pt-8 p-5 sm:p-8">
             <AnimatePresence mode="wait">
               {step === "info" ? (
                 <motion.form
@@ -227,7 +227,7 @@ function LoginForm() {
                 >
                   <div className="text-center space-y-2">
                     <p className="text-sm text-gray-400">OTP entry field</p>
-                    <div className="flex justify-between gap-2" onPaste={handlePaste}>
+                    <div className="flex justify-between gap-1.5 sm:gap-2" onPaste={handlePaste}>
                       {otp.map((data, index) => (
                         <input
                           key={index}
@@ -239,7 +239,7 @@ function LoginForm() {
                           onChange={(e) => handleOtpChange(e.target, index)}
                           onKeyDown={(e) => handleKeyDown(e, index)}
                           onFocus={(e) => e.target.select()}
-                          className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-white/5 border border-white/10 rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none text-white transition-all"
+                          className="w-10 h-12 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold bg-white/5 border border-white/10 rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none text-white transition-all"
                         />
                       ))}
                     </div>

@@ -118,18 +118,23 @@ export default function CustomerMenuPage() {
   return (
     <div className="pb-24 max-w-lg mx-auto bg-background text-white min-h-screen">
       {/* Header */}
+<<<<<<< HEAD
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-primary">Menu</h1>
+=======
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-3.5 sm:p-4 flex items-center justify-between">
+        <h1 className="text-lg sm:text-xl font-bold tracking-tight">Canteen <span className="text-primary">Menu</span></h1>
+>>>>>>> 7c6dbd55af6ea4348ccd0d8ee02219da12d74c09
         <div className="flex items-center gap-2">
           <div className="relative">
             <button 
               onClick={() => setIsNotificationsOpen(true)} 
-              className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
+              className="text-primary hover:bg-primary/10 p-2 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
               aria-label="Notifications"
             >
-              <Bell className="w-6 h-6" />
+              <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
               )}
             </button>
           </div>
@@ -138,7 +143,7 @@ export default function CustomerMenuPage() {
             className="text-primary hover:bg-primary/10 p-1 rounded-full transition-all hover:scale-110 active:scale-95 outline-none"
             aria-label="Profile"
           >
-            <CircleUser className="w-8 h-8" />
+            <CircleUser className="w-7 h-7 sm:w-8 sm:h-8" />
           </button>
         </div>
       </header>
@@ -152,6 +157,7 @@ export default function CustomerMenuPage() {
       />
 
 
+<<<<<<< HEAD
       {/* Sticky Banner & Categories */}
       <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-md border-b border-white/5 shadow-xl">
         {/* Hero / Info */}
@@ -176,6 +182,29 @@ export default function CustomerMenuPage() {
             </button>
           ))}
         </div>
+=======
+      {/* Hero / Info */}
+      <div className="p-4 pt-6 text-center sm:text-left">
+        <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-1">{cafeteria?.name || "Cafeteria"}</h2>
+        <p className="text-gray-500 text-xs sm:text-sm font-medium">Delicious meals pre-prepared for you.</p>
+      </div>
+
+      {/* Categories */}
+      <div className="overflow-x-auto no-scrollbar flex gap-2 px-4 py-4 scroll-smooth">
+        {categories.map(category => (
+          <button
+            key={category}
+            onClick={() => setActiveCategory(category)}
+            className={`px-5 py-2 rounded-full whitespace-nowrap text-xs sm:text-sm font-black uppercase tracking-widest transition-all ${
+              activeCategory === category 
+                ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                : "bg-white/5 text-gray-500 hover:text-white"
+            }`}
+          >
+            {category}
+          </button>
+        ))}
+>>>>>>> 7c6dbd55af6ea4348ccd0d8ee02219da12d74c09
       </div>
 
       {/* Menu Grid */}
@@ -228,11 +257,11 @@ export default function CustomerMenuPage() {
                 {/* Product Details */}
                 <div className="flex-1 p-4 flex flex-col justify-between">
                   <div>
-                    <h3 className="font-bold text-lg leading-tight">{item.name}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-1 mt-1">{item.description}</p>
+                    <h3 className="font-black text-base sm:text-lg leading-tight text-white mb-1">{item.name}</h3>
+                    <p className="text-[10px] sm:text-xs text-gray-500 line-clamp-2 leading-relaxed">{item.description}</p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-primary font-bold text-lg">RS {item.price}</span>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="text-primary font-black text-base sm:text-lg">RS {item.price}</span>
                     
                     {/* Add to Cart Logic */}
                     <div className="flex items-center gap-3">

@@ -85,9 +85,28 @@ export default function AdminDashboard() {
     }
   };
 
-  // Calculate Bulk/Total Items for the "Day's Total"
+  // Advanced Grouping for Kitchen View Breakdown
+  const bulkBreakdown = orders
+    .filter(o => o.status === "accepted" || o.status === "preparing")
+    .reduce((acc: { [key: string]: { total: number; orders: any[] } }, order) => {
+      order.items.forEach(item => {
+        if (!acc[item.name]) {
+          acc[item.name] = { total: 0, orders: [] };
+        }
+        acc[item.name].total += item.quantity;
+        acc[item.name].orders.push({
+          orderId: order._id,
+          customerName: order.customerName,
+          quantity: item.quantity,
+          timeSlot: order.timeSlot,
+          status: order.status
+        });
+      });
+      return acc;
+    }, {});
+
   const bulkTotals = orders
-    .filter(o => o.status !== "cancelled")
+    .filter(o => o.status !== "cancelled" && o.status !== "pending" && o.status !== "ready")
     .reduce((acc: { [key: string]: number }, order) => {
       order.items.forEach(item => {
         acc[item.name] = (acc[item.name] || 0) + item.quantity;
@@ -95,7 +114,7 @@ export default function AdminDashboard() {
       return acc;
     }, {});
 
-  const totalItemCount = Object.values(bulkTotals).reduce((a, b) => a + b, 0);
+  const totalItemCount = Object.values(bulkTotals).reduce((a: number, b: number) => a + b, 0);
 
   if (loading) {
     return (
@@ -107,6 +126,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-10 max-w-7xl">
+<<<<<<< HEAD
       {/* Sticky Header Area */}
       <div className="sticky top-[72px] lg:top-[-32px] z-30 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-6 lg:-mx-8 px-6 lg:px-8 py-6 mb-10 border-b border-white/5 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -147,6 +167,52 @@ export default function AdminDashboard() {
               Order History
             </button>
           </div>
+=======
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-none">Canteen Dashboard</h1>
+            <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center">
+              <div className="w-1 h-1 rounded-full bg-green-500" />
+              <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
+            </div>
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
+        </div>
+        
+        <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl self-start md:self-auto max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
+          <button 
+            onClick={() => setActiveTab("individual")}
+            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "individual" 
+                ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            Individual
+          </button>
+          <button 
+            onClick={() => setActiveTab("bulk")}
+            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "bulk" 
+                ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            Kitchen
+          </button>
+          <button 
+            onClick={() => setActiveTab("history")}
+            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === "history" 
+                ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            History
+          </button>
+>>>>>>> 7c6dbd55af6ea4348ccd0d8ee02219da12d74c09
         </div>
       </div>
 
@@ -164,7 +230,7 @@ export default function AdminDashboard() {
               >
                 {orders
                   .filter(o => 
-                    activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
+                    activeTab === "individual" ? o.status === "pending" || o.status === "accepted" : o.status !== "pending" && o.status !== "accepted"
                   ).map((order) => (
                   <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
                     <CardContent className="p-7 space-y-6">
@@ -183,7 +249,7 @@ export default function AdminDashboard() {
 
                       <div className="space-y-1 py-1">
                         <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Time Slot</p>
-                        <p className="text-4xl font-black text-primary leading-none tracking-tight">{order.timeSlot}</p>
+                        <p className="text-3xl md:text-4xl font-black text-primary leading-none tracking-tight">{order.timeSlot}</p>
                       </div>
 
                       <div className="space-y-2 border-t border-white/5 pt-4">
@@ -216,26 +282,37 @@ export default function AdminDashboard() {
                             <div className="flex gap-2 w-full">
                               <Button 
                                 variant="outline"
-                                className="w-1/3 h-14 text-sm font-black border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
+                                className="w-1/3 h-12 sm:h-14 text-xs sm:text-sm font-black border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
                                 onClick={() => setRejectConfirmId(order._id)}
                               >
                                 Reject
                               </Button>
                               <Button 
-                                className="w-2/3 h-14 text-xl font-black rounded-2xl shadow-xl shadow-primary/30"
+                                className="w-2/3 h-12 sm:h-14 text-lg sm:text-xl font-black rounded-2xl shadow-xl shadow-primary/30"
                                 onClick={() => updateOrderStatus(order._id, "accepted")}
                               >
                                 Accept
                               </Button>
                             </div>
                           </div>
+                        ) : order.status === "accepted" ? (
+                          <div className="pt-2">
+                            <Button 
+                              className="w-full h-12 sm:h-14 bg-green-600 hover:bg-green-500 text-white text-lg sm:text-xl font-black rounded-2xl shadow-xl shadow-green-500/20 flex items-center justify-center gap-2"
+                              onClick={() => updateOrderStatus(order._id, "ready")}
+                            >
+                              <CheckCircle2 className="w-6 h-6" />
+                              MARK READY
+                            </Button>
+                            <p className="text-[10px] font-extrabold text-green-500/50 uppercase tracking-widest text-center mt-3">Ready for student to pick up?</p>
+                          </div>
                         ) : (
                           <div className="py-2 text-center">
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Final Status</p>
                             <p className={`text-xl font-black mt-1 ${
-                              order.status === 'accepted' ? 'text-green-500' : 'text-red-500'
+                              order.status === 'ready' ? 'text-green-500' : 'text-red-500'
                             }`}>
-                              {order.status === 'accepted' ? 'ORDER ACCEPTED' : 'ORDER REJECTED'}
+                              {order.status === 'ready' ? 'ORDER READY' : 'ORDER REJECTED'}
                             </p>
                           </div>
                         )}
@@ -264,14 +341,14 @@ export default function AdminDashboard() {
                 className="flex flex-col gap-6"
               >
                 {/* Top Metrics */}
-                <div className="grid grid-cols-2 gap-4 md:gap-6">
-                  <Card className="bg-primary/10 border-primary/20 text-center py-6 md:py-10">
-                    <p className="text-[10px] md:text-xs font-bold text-primary uppercase tracking-widest mb-1">Total Items to Cook</p>
-                    <p className="text-4xl md:text-6xl font-black text-primary">{totalItemCount}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card className="bg-primary/10 border-primary/20 text-center py-5 md:py-8">
+                    <p className="text-[9px] md:text-xs font-bold text-primary uppercase tracking-widest mb-1">Items to Cook</p>
+                    <p className="text-3xl md:text-5xl font-black text-primary">{totalItemCount}</p>
                   </Card>
-                  <Card className="bg-white/5 border-white/5 text-center py-6 md:py-10">
-                    <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
-                    <p className="text-4xl md:text-6xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "ready").length}</p>
+                  <Card className="bg-white/5 border-white/5 text-center py-5 md:py-8">
+                    <p className="text-[9px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
+                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "pending" && o.status !== "ready").length}</p>
                   </Card>
                 </div>
 
@@ -282,15 +359,36 @@ export default function AdminDashboard() {
                     <p className="text-sm md:text-base text-gray-500 mt-1">Combined totals of all items currently ordered by students.</p>
                   </div>
                   <CardContent className="p-4 md:p-8 space-y-3 md:space-y-4">
-                    {Object.entries(bulkTotals).map(([name, count]) => (
-                      <div key={name} className="flex justify-between items-center bg-white/5 p-4 md:p-5 rounded-2xl border border-white/5 shadow-inner">
-                        <span className="text-base md:text-lg font-bold text-white tracking-tight">{name}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl md:text-3xl font-black text-primary">{String(count)}x</span>
+                    {Object.entries(bulkBreakdown).map(([name, data]) => (
+                      <div key={name} className="flex flex-col bg-white/5 rounded-2xl border border-white/5 shadow-inner overflow-hidden">
+                        <div className="flex justify-between items-center p-4 md:p-5">
+                          <span className="text-base md:text-lg font-bold text-white tracking-tight">{name}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl md:text-3xl font-black text-primary">{String(data.total)}x</span>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-black/20 border-t border-white/5 p-4 space-y-3">
+                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Individual Orders</p>
+                          {data.orders.map((subOrder: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between bg-white/5 rounded-xl p-3 border border-white/5">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-white">{subOrder.customerName}</span>
+                                <span className="text-[10px] font-medium text-gray-500">Qty: {subOrder.quantity} • {subOrder.timeSlot}</span>
+                              </div>
+                              <Button 
+                                variant="outline"
+                                className="h-9 px-4 text-[10px] font-black uppercase text-green-500 border-green-500/20 hover:bg-green-500/10 rounded-lg"
+                                onClick={() => updateOrderStatus(subOrder.orderId, "ready")}
+                              >
+                                Mark Ready
+                              </Button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
-                    {Object.keys(bulkTotals).length === 0 && (
+                    {Object.keys(bulkBreakdown).length === 0 && (
                       <div className="py-10 text-center text-gray-500 font-bold italic opacity-50">
                         No items to cook right now.
                       </div>
