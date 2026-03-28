@@ -216,7 +216,7 @@ export default function CheckoutPage() {
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-xl font-bold">Checkout</h1>
+        <h1 className="text-xl font-black uppercase tracking-widest text-primary">Checkout</h1>
         <div className="w-10" /> {/* Spacer */}
       </header>
 

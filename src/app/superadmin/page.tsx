@@ -162,18 +162,27 @@ export default function SuperadminDashboard() {
   return (
     <div className="space-y-12 max-w-7xl mx-auto pb-20">
       {/* Platform Overview */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-extrabold text-white leading-tight">Admin Management</h1>
-          <p className="text-gray-500 font-medium">Oversee all cafeteria operations and management accounts.</p>
+      {/* Sticky Header Area */}
+      <div className="sticky top-[72px] lg:top-[-32px] z-30 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-6 lg:-mx-8 px-6 lg:px-8 py-6 mb-10 border-b border-white/5 shadow-2xl">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-extrabold text-white leading-tight">Admin Management</h1>
+              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center">
+                <div className="w-1 h-1 rounded-full bg-green-500" />
+                <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
+              </div>
+            </div>
+            <p className="text-gray-500 font-medium">Oversee all cafeteria operations and management accounts.</p>
+          </div>
+          <Button 
+            className="h-14 px-8 rounded-2xl text-lg font-bold shadow-2xl shadow-primary/30 flex items-center gap-3"
+            onClick={() => handleOpenModal()}
+          >
+            <UserPlus className="w-5 h-5" />
+            Create New Admin
+          </Button>
         </div>
-        <Button 
-          className="h-14 px-8 rounded-2xl text-lg font-bold shadow-2xl shadow-primary/30 flex items-center gap-3"
-          onClick={() => handleOpenModal()}
-        >
-          <UserPlus className="w-5 h-5" />
-          Create New Admin
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

@@ -126,93 +126,52 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-10 max-w-7xl">
-<<<<<<< HEAD
       {/* Sticky Header Area */}
       <div className="sticky top-[72px] lg:top-[-32px] z-30 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-6 lg:-mx-8 px-6 lg:px-8 py-6 mb-10 border-b border-white/5 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-2 leading-none">Canteen Dashboard</h1>
-            <p className="text-gray-500 font-medium">Manage live orders and see what to cook.</p>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-none">Canteen Dashboard</h1>
+              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center">
+                <div className="w-1 h-1 rounded-full bg-green-500" />
+                <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
+              </div>
+            </div>
+            <p className="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
           </div>
           
-          <div className="flex items-center gap-4 bg-[#1a1a1a] p-1.5 rounded-2xl border border-white/5 shadow-2xl overflow-hidden self-start md:self-auto">
+          <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl self-start md:self-auto max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
             <button 
               onClick={() => setActiveTab("individual")}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === "individual" 
-                  ? "bg-primary text-white shadow-xl shadow-primary/20" 
+                  ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
               }`}
             >
-              Individual Orders
+              Individual
             </button>
             <button 
               onClick={() => setActiveTab("bulk")}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === "bulk" 
-                  ? "bg-primary text-white shadow-xl shadow-primary/20" 
+                  ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
               }`}
             >
-              Kitchen View
+              Kitchen
             </button>
             <button 
               onClick={() => setActiveTab("history")}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === "history" 
-                  ? "bg-primary text-white shadow-xl shadow-primary/20" 
+                  ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
               }`}
             >
-              Order History
+              History
             </button>
           </div>
-=======
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-none">Canteen Dashboard</h1>
-            <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center">
-              <div className="w-1 h-1 rounded-full bg-green-500" />
-              <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
-            </div>
-          </div>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
-        </div>
-        
-        <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl self-start md:self-auto max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
-          <button 
-            onClick={() => setActiveTab("individual")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === "individual" 
-                ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                : "text-gray-500 hover:text-white"
-            }`}
-          >
-            Individual
-          </button>
-          <button 
-            onClick={() => setActiveTab("bulk")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === "bulk" 
-                ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                : "text-gray-500 hover:text-white"
-            }`}
-          >
-            Kitchen
-          </button>
-          <button 
-            onClick={() => setActiveTab("history")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === "history" 
-                ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                : "text-gray-500 hover:text-white"
-            }`}
-          >
-            History
-          </button>
->>>>>>> 7c6dbd55af6ea4348ccd0d8ee02219da12d74c09
         </div>
       </div>
 

@@ -150,7 +150,7 @@ export default function OrderTrackPage() {
         <Button variant="ghost" size="icon" onClick={() => router.push(`/customer/${adminId}/menu`)}>
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-xl font-bold">Track Order</h1>
+        <h1 className="text-xl font-black uppercase tracking-widest text-primary">Track Order</h1>
         <div className="flex items-center gap-2">
           <div className="relative">
             <button 
