@@ -344,7 +344,7 @@ export default function AdminDashboard() {
                   </Card>
                   <Card className="bg-white/5 border-white/5 text-center py-5 md:py-8">
                     <p className="text-[9px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
-                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status === "pending" || o.status === "preparing").length}</p>
+                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status === "pending" || o.status === "accepted" || o.status === "preparing").length}</p>
                   </Card>
                 </div>
 
