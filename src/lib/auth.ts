@@ -13,7 +13,7 @@ export async function encrypt(payload: EncryptPayload) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("2h")
+    .setExpirationTime("365d")
     .sign(key);
 }
 
@@ -46,7 +46,7 @@ export async function login(user: LoginUser) {
   const cookieName = COOKIE_NAMES[role] || "session_customer";
 
   // Create the session - 30 days as requested (Strong persistence)
-  const duration = 30 * 24 * 60 * 60 * 1000;
+  const duration = 365 * 24 * 60 * 60 * 1000;
   const expires = new Date(Date.now() + duration);
   const session = await encrypt({ user: userPayload, expires });
 
@@ -115,7 +115,7 @@ export async function updateSession(request: NextRequest) {
   try {
     // Extend the session by another 30 days
     const parsed = await decrypt(cookieValue);
-    const duration = 30 * 24 * 60 * 60 * 1000;
+    const duration = 365 * 24 * 60 * 60 * 1000;
     parsed.expires = new Date(Date.now() + duration);
     
     const res = NextResponse.next();
