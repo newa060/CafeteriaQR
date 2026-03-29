@@ -114,17 +114,18 @@ export const NotificationSheet: React.FC<NotificationSheetProps> = ({ isOpen, on
                         : "bg-white/[0.03] border-white/10 shadow-lg shadow-black/20"
                     }`}
                   >
+                    {!notif.isRead && (
+                      <div className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full" />
+                    )}
+                    
                     <div className="flex gap-4">
-                      <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         notif.type === "success" ? "bg-green-500/10 text-green-400" : "bg-primary/10 text-primary"
                       }`}>
                         {notif.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
-                        {!notif.isRead && (
-                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-zinc-950 shadow-sm" />
-                        )}
                       </div>
                       
-                      <div className="flex-1 min-w-0 pr-8">
+                      <div className="flex-1 min-w-0 pr-6">
                         <h4 className="text-sm font-bold text-white tracking-tight leading-snug">
                           {notif.title}
                         </h4>
@@ -140,14 +141,10 @@ export const NotificationSheet: React.FC<NotificationSheetProps> = ({ isOpen, on
                       </div>
 
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeNotification(notif.id);
-                        }}
-                        className="absolute top-2 right-2 p-2 text-gray-500 hover:text-red-400 transition-all rounded-full hover:bg-red-400/10 active:scale-90"
-                        aria-label="Remove notification"
+                        onClick={() => removeNotification(notif.id)}
+                        className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 p-2 text-gray-600 hover:text-red-400 transition-all rounded-lg hover:bg-red-400/10"
                       >
-                        <X className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </motion.div>

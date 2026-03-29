@@ -132,6 +132,10 @@ export default function AdminDashboard() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-none">Canteen Dashboard</h1>
+              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center">
+                <div className="w-1 h-1 rounded-full bg-green-500" />
+                <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
+              </div>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
           </div>
