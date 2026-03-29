@@ -96,7 +96,18 @@ export default async function middleware(req: NextRequest) {
 
   // Not authenticated for this panel → redirect to its login
   if (!session) {
-    return NextResponse.redirect(new URL(panel.loginUrl, req.nextUrl));
+    const loginUrl = new URL(panel.loginUrl, req.nextUrl);
+    
+    // If scanning a specific canteen QR, preserve that ID in the redirect
+    if (path.startsWith("/customer/")) {
+      const parts = path.split("/");
+      // Path like /customer/[adminId]/menu -> parts are ["", "customer", "[adminId]", "menu"]
+      if (parts.length >= 3 && parts[2] !== "login" && parts[2] !== "profile") {
+        loginUrl.searchParams.set("adminId", parts[2]);
+      }
+    }
+    
+    return NextResponse.redirect(loginUrl);
   }
 
 

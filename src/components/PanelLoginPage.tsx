@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -73,6 +74,9 @@ const panelConfig: Record<PanelType, PanelConfig> = {
 function LoginForm({ panel }: { panel: PanelType }) {
   const config = panelConfig[panel];
   const { user, loading: authLoading, login } = useAuth();
+
+  const searchParams = useSearchParams();
+  const urlAdminId = searchParams.get("adminId") || "";
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -199,7 +203,13 @@ function LoginForm({ panel }: { panel: PanelType }) {
       const res = await fetch("/api/auth/register-customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, faculty, canteenCode }),
+        body: JSON.stringify({ 
+          name, 
+          email, 
+          faculty, 
+          canteenCode: urlAdminId ? undefined : canteenCode,
+          adminId: urlAdminId || undefined
+        }),
       });
 
       if (res.ok) {
@@ -369,17 +379,19 @@ function LoginForm({ panel }: { panel: PanelType }) {
                         required
                       />
                     </div>
-                    <div className="relative group">
-                      <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary transition-colors" />
-                      <Input
-                        type="text"
-                        placeholder="Canteen Code"
-                        value={canteenCode}
-                        onChange={(e) => setCanteenCode(e.target.value)}
-                        className="pl-12 uppercase"
-                        required
-                      />
-                    </div>
+                    {!urlAdminId && (
+                      <div className="relative group">
+                        <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary transition-colors" />
+                        <Input
+                          type="text"
+                          placeholder="Canteen Code"
+                          value={canteenCode}
+                          onChange={(e) => setCanteenCode(e.target.value)}
+                          className="pl-12 uppercase"
+                          required={!urlAdminId}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {error && (

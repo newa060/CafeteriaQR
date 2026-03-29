@@ -7,10 +7,11 @@ import { login } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const { name, email, faculty, canteenCode } = await req.json();
+    const { name, email, faculty, canteenCode, adminId } = await req.json();
+    console.log("Registering customer:", { name, email, faculty, canteenCode, adminId });
 
-    if (!name || !email || !faculty || !canteenCode) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    if (!name || !email || !faculty || (!canteenCode && !adminId)) {
+      return NextResponse.json({ error: "All profile fields are required" }, { status: 400 });
     }
 
     // Check if user already exists (safety check)
@@ -19,10 +20,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User already exists. Please log in." }, { status: 400 });
     }
 
-    // Validate Canteen Code
-    const cafeteria = await Cafeteria.findOne({ canteenCode: canteenCode.toUpperCase() });
+    // Validate Canteen Code or Admin ID
+    let cafeteria = null;
+    if (canteenCode) {
+      cafeteria = await Cafeteria.findOne({ canteenCode: canteenCode.toUpperCase() });
+    } else if (adminId) {
+      // Same lookup logic as the menu API
+      cafeteria = await Cafeteria.findOne({ adminId: adminId });
+      if (!cafeteria) {
+        cafeteria = await Cafeteria.findById(adminId).catch(() => null);
+      }
+    }
+
     if (!cafeteria) {
-      return NextResponse.json({ error: "Invalid Canteen Code. Please check with your cafeteria." }, { status: 400 });
+      const errorMsg = canteenCode 
+        ? "Invalid Canteen Code. Please check with your cafeteria." 
+        : "Could not identify cafeteria. Please enter the canteen code manually.";
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
     }
 
     // Create the new customer
