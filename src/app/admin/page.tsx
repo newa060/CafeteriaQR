@@ -15,7 +15,8 @@ import {
   Pizza,
   ArrowRight,
   Eye,
-  X
+  X,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -110,9 +111,9 @@ export default function AdminDashboard() {
     }
   };
 
-  // 1. Kitchen View (Bulk Breakdown) - Now shows 'pending' orders so the chef knows what to cook
+  // 1. Kitchen View (Bulk Breakdown) - Now shows 'pending' and 'accepted' orders so the chef knows what to cook
   const bulkBreakdown = orders
-    .filter(o => o.status === "pending" || o.status === "preparing")
+    .filter(o => o.status === "pending" || o.status === "accepted" || o.status === "preparing")
     .reduce((acc: { [key: string]: { total: number; orders: any[] } }, order) => {
       order.items.forEach(item => {
         if (!acc[item.name]) {
@@ -131,7 +132,7 @@ export default function AdminDashboard() {
     }, {});
 
   const bulkTotals = orders
-    .filter(o => o.status === "pending" || o.status === "preparing")
+    .filter(o => o.status === "pending" || o.status === "accepted" || o.status === "preparing")
     .reduce((acc: { [key: string]: number }, order) => {
       order.items.forEach(item => {
         acc[item.name] = (acc[item.name] || 0) + item.quantity;
@@ -165,7 +166,23 @@ export default function AdminDashboard() {
             <p className="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
           </div>
           
-          <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl self-start md:self-auto max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
+          <div className="flex items-center gap-4 self-start md:self-auto">
+            <Button 
+              variant="outline" 
+              className="h-9 px-3 border-white/5 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-400 gap-2 rounded-xl"
+              onClick={() => {
+                showNotification({
+                  title: "Test Notification",
+                  message: "Your notifications are working!",
+                  type: "info"
+                });
+              }}
+            >
+              <Bell className="w-3.5 h-3.5 text-primary" />
+              Test Audio
+            </Button>
+            
+            <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
             <button 
               onClick={() => setActiveTab("individual")}
               className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
@@ -196,6 +213,7 @@ export default function AdminDashboard() {
             >
               History
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -225,9 +243,11 @@ export default function AdminDashboard() {
                         </div>
                         <Badge variant={
                           order.status === "pending" ? "warning" : 
-                          order.status === "ready" ? "default" : "destructive"
+                          (order.status === "ready" || order.status === "accepted" || order.status === "preparing") ? "default" : "destructive"
                         } className="px-3 py-1 rounded-lg">
-                          {order.status === "ready" ? "accepted" : order.status === "pending" ? "pending" : "rejected"}
+                          {order.status === "ready" ? "Ready" : 
+                           (order.status === "accepted" || order.status === "preparing") ? "Accepted" : 
+                           order.status === "pending" ? "Pending" : "Rejected"}
                         </Badge>
                       </div>
 
@@ -276,7 +296,7 @@ export default function AdminDashboard() {
                               </Button>
                               <Button 
                                 className="w-2/3 h-12 sm:h-14 text-lg sm:text-xl font-black rounded-2xl shadow-xl shadow-primary/30"
-                                onClick={() => updateOrderStatus(order._id, "ready")}
+                                onClick={() => updateOrderStatus(order._id, "accepted")}
                               >
                                 Accept
                               </Button>
@@ -357,7 +377,7 @@ export default function AdminDashboard() {
                                 className="h-9 px-4 text-[10px] font-black uppercase text-green-500 border-green-500/20 hover:bg-green-500/10 rounded-lg"
                                 onClick={() => updateOrderStatus(subOrder.orderId, "ready")}
                               >
-                                Accept
+                                Mark Ready
                               </Button>
                             </div>
                           ))}
