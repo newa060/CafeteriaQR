@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge"; 
+import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/context/AuthContext";
 import { useNotification } from "@/context/NotificationContext";
 import { NotificationSheet } from "@/components/NotificationSheet";
@@ -158,6 +159,20 @@ export default function CustomerMenuPage() {
         <div className="p-4 pt-6 text-center sm:text-left">
           <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-1">{cafeteria?.name || "Cafeteria"}</h2>
           <p className="text-gray-500 text-xs sm:text-sm font-medium">Delicious meals pre-prepared for you.</p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="px-4 pb-4">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+            <Input
+              type="text"
+              placeholder="Search for dishes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 text-sm sm:text-base placeholder:text-gray-600"
+            />
+          </div>
         </div>
 
         {/* Categories */}
