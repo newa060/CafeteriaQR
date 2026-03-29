@@ -248,7 +248,7 @@ export default function AdminDashboard() {
                               </Button>
                               <Button 
                                 className="w-2/3 h-12 sm:h-14 text-lg sm:text-xl font-black rounded-2xl shadow-xl shadow-primary/30"
-                                onClick={() => updateOrderStatus(order._id, "ready")}
+                                onClick={() => updateOrderStatus(order._id, "accepted")}
                               >
                                 Accept
                               </Button>
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
                               <Button 
                                 variant="outline"
                                 className="h-9 px-4 text-[10px] font-black uppercase text-green-500 border-green-500/20 hover:bg-green-500/10 rounded-lg"
-                                onClick={() => updateOrderStatus(subOrder.orderId, "ready")}
+                                onClick={() => updateOrderStatus(subOrder.orderId, "accepted")}
                               >
                                 Accept
                               </Button>

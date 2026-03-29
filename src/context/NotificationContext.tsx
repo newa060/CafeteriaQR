@@ -121,26 +121,36 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           return;
         }
 
-        // Subsequent runs: detect new "Accepted" statuses
-        const notifiedAccepted = JSON.parse(localStorage.getItem("notified_accepted_orders") || "[]");
-        const newNotified = [...notifiedAccepted];
+        // Subsequent runs: detect new "Accepted", "Ready", or "Cancelled" statuses
+        const notifiedOrders = JSON.parse(localStorage.getItem("notified_orders") || "[]");
+        const newNotified = [...notifiedOrders];
         let hasNew = false;
 
         orders.forEach(order => {
-          if (order.status === "accepted" && !notifiedAccepted.includes(order._id)) {
-            showNotificationRef.current({
-              title: "Order Accepted!",
-              message: "Your order has been accepted.",
-              type: "success",
-            });
-            newNotified.push(order._id);
-            hasNew = true;
+          if (!notifiedOrders.includes(order._id)) {
+            if (order.status === "accepted") {
+              showNotificationRef.current({
+                title: "Order Accepted!",
+                message: "Your order has been accepted.",
+                type: "success",
+              });
+              newNotified.push(order._id);
+              hasNew = true;
+            } else if (order.status === "cancelled") {
+              showNotificationRef.current({
+                title: "Order Rejected",
+                message: "Your order receipt could not be verified.",
+                type: "warning",
+              });
+              newNotified.push(order._id);
+              hasNew = true;
+            }
           }
         });
 
         if (hasNew) {
           // Store last 50 notified order IDs to keep localStorage clean
-          localStorage.setItem("notified_accepted_orders", JSON.stringify(newNotified.slice(-50)));
+          localStorage.setItem("notified_orders", JSON.stringify(newNotified.slice(-50)));
         }
       } catch {
         // Silent fail — background polling
