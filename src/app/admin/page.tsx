@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
+import { useNotification } from "@/context/NotificationContext";
+import { useRef } from "react";
 
 interface OrderItem {
   name: string;
@@ -46,13 +48,36 @@ export default function AdminDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
   const [rejectConfirmId, setRejectConfirmId] = useState<string | null>(null);
+  const { showNotification } = useNotification();
+  const notifiedOrderIds = useRef<Set<string>>(new Set());
+  const isFirstLoad = useRef(true);
 
   const fetchOrders = async () => {
     setIsRefreshing(true);
     try {
       const res = await fetch("/api/admin/orders");
       if (res.ok) {
-        const data = await res.json();
+        const data: Order[] = await res.json();
+        
+        // Handle notifications for new pending orders
+        if (isFirstLoad.current) {
+          // On first load, just record existing orders without notifying
+          const ids = new Set(data.map(o => o._id));
+          notifiedOrderIds.current = ids;
+          isFirstLoad.current = false;
+        } else {
+          data.forEach(order => {
+            if (order.status === "pending" && !notifiedOrderIds.current.has(order._id)) {
+              showNotification({
+                title: "New Order! 🔔",
+                message: `New order from ${order.customerName}`,
+                type: "info",
+              });
+              notifiedOrderIds.current.add(order._id);
+            }
+          });
+        }
+        
         setOrders(data);
       }
     } catch (err) {
@@ -215,7 +240,10 @@ export default function AdminDashboard() {
                         {order.items.map((item, idx) => (
                           <div key={idx} className="flex items-center gap-2 text-gray-300">
                             <div className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
-                            <span className="text-sm font-medium">{item.name}</span>
+                            <span className="text-sm font-medium">
+                              <span className="text-primary font-bold mr-1">{item.quantity}x</span>
+                              {item.name}
+                            </span>
                           </div>
                         ))}
                       </div>
