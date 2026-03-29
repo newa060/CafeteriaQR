@@ -85,9 +85,9 @@ export default function AdminDashboard() {
     }
   };
 
-  // Advanced Grouping for Kitchen View Breakdown
+  // 1. Kitchen View (Bulk Breakdown) - Now shows 'pending' orders so the chef knows what to cook
   const bulkBreakdown = orders
-    .filter(o => o.status === "accepted" || o.status === "preparing")
+    .filter(o => o.status === "pending" || o.status === "preparing")
     .reduce((acc: { [key: string]: { total: number; orders: any[] } }, order) => {
       order.items.forEach(item => {
         if (!acc[item.name]) {
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
     }, {});
 
   const bulkTotals = orders
-    .filter(o => o.status !== "cancelled" && o.status !== "pending" && o.status !== "ready")
+    .filter(o => o.status === "pending" || o.status === "preparing")
     .reduce((acc: { [key: string]: number }, order) => {
       order.items.forEach(item => {
         acc[item.name] = (acc[item.name] || 0) + item.quantity;
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
               >
                 {orders
                   .filter(o => 
-                    activeTab === "individual" ? o.status === "pending" || o.status === "accepted" : o.status !== "pending" && o.status !== "accepted"
+                    activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
                   ).map((order) => (
                   <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
                     <CardContent className="p-7 space-y-6">
@@ -200,9 +200,9 @@ export default function AdminDashboard() {
                         </div>
                         <Badge variant={
                           order.status === "pending" ? "warning" : 
-                          order.status === "accepted" ? "default" : "destructive"
+                          order.status === "ready" ? "default" : "destructive"
                         } className="px-3 py-1 rounded-lg">
-                          {order.status === "accepted" ? "accepted" : order.status === "pending" ? "pending" : "rejected"}
+                          {order.status === "ready" ? "accepted" : order.status === "pending" ? "pending" : "rejected"}
                         </Badge>
                       </div>
 
@@ -248,22 +248,11 @@ export default function AdminDashboard() {
                               </Button>
                               <Button 
                                 className="w-2/3 h-12 sm:h-14 text-lg sm:text-xl font-black rounded-2xl shadow-xl shadow-primary/30"
-                                onClick={() => updateOrderStatus(order._id, "accepted")}
+                                onClick={() => updateOrderStatus(order._id, "ready")}
                               >
                                 Accept
                               </Button>
                             </div>
-                          </div>
-                        ) : order.status === "accepted" ? (
-                          <div className="pt-2">
-                            <Button 
-                              className="w-full h-12 sm:h-14 bg-green-600 hover:bg-green-500 text-white text-lg sm:text-xl font-black rounded-2xl shadow-xl shadow-green-500/20 flex items-center justify-center gap-2"
-                              onClick={() => updateOrderStatus(order._id, "ready")}
-                            >
-                              <CheckCircle2 className="w-6 h-6" />
-                              MARK READY
-                            </Button>
-                            <p className="text-[10px] font-extrabold text-green-500/50 uppercase tracking-widest text-center mt-3">Ready for student to pick up?</p>
                           </div>
                         ) : (
                           <div className="py-2 text-center">
@@ -307,7 +296,7 @@ export default function AdminDashboard() {
                   </Card>
                   <Card className="bg-white/5 border-white/5 text-center py-5 md:py-8">
                     <p className="text-[9px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
-                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status !== "cancelled" && o.status !== "pending" && o.status !== "ready").length}</p>
+                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status === "pending" || o.status === "preparing").length}</p>
                   </Card>
                 </div>
 
@@ -340,7 +329,7 @@ export default function AdminDashboard() {
                                 className="h-9 px-4 text-[10px] font-black uppercase text-green-500 border-green-500/20 hover:bg-green-500/10 rounded-lg"
                                 onClick={() => updateOrderStatus(subOrder.orderId, "ready")}
                               >
-                                Mark Ready
+                                Accept
                               </Button>
                             </div>
                           ))}

@@ -22,7 +22,7 @@ import { NotificationSheet } from "@/components/NotificationSheet";
 
 interface Order {
   _id: string;
-  status: "pending" | "accepted" | "cancelled";
+  status: "pending" | "accepted" | "ready" | "cancelled";
   totalAmount: number;
   timeSlot: string;
   items: Array<{ name: string; quantity: number; price: number }>;
@@ -33,6 +33,7 @@ interface Order {
 const statusMap = {
   pending: { label: "Order Pending", icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10" },
   accepted: { label: "Order Accepted", icon: CheckCircle2, color: "text-blue-500", bg: "bg-blue-500/10" },
+  ready: { label: "Order Accepted", icon: CheckCheck, color: "text-green-500", bg: "bg-green-500/10" },
   cancelled: { label: "Order Cancelled", icon: Package, color: "text-red-500", bg: "bg-red-500/10" },
 };
 
@@ -86,7 +87,7 @@ export default function OrderTrackPage() {
 
   useEffect(() => {
     if (order && previousStatus.current && previousStatus.current !== order.status) {
-      if (order.status === "accepted") {
+      if (order.status === "accepted" || order.status === "ready") {
         if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
         playNotificationSound("success");
       } else if (order.status === "cancelled") {
