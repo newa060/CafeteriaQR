@@ -181,7 +181,7 @@ export default function CustomerProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-white pb-10">
+    <div className="min-h-[100dvh] bg-background text-white flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
@@ -215,7 +215,7 @@ export default function CustomerProfilePage() {
         }} 
       />
 
-      <div className="max-w-lg mx-auto p-4 space-y-8">
+      <div className="flex-1 w-full max-w-lg mx-auto p-4 space-y-8 relative">
         {/* User Card - FIXED/STICKY */}
         <section className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-md pt-2 pb-6 -mx-4 px-4 border-b border-white/5 shadow-xl">
           <div className="relative">
@@ -563,7 +563,7 @@ export default function CustomerProfilePage() {
         )}
       </AnimatePresence>
 
-      <div className="py-12 flex flex-col items-center justify-center opacity-30">
+      <div className="mt-auto pt-10 pb-4 flex flex-col items-center justify-center opacity-30">
         <div className="h-px w-24 bg-white/10 mb-4" />
         <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
       </div>

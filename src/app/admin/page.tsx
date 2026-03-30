@@ -229,44 +229,13 @@ export default function AdminDashboard() {
                   <span className="text-[8px] sm:text-[9px] font-bold text-green-500 uppercase tracking-widest leading-none">Live</span>
                 </div>
               </div>
-              
-              <Button 
-                variant="outline" 
-                className="md:hidden h-8 px-2.5 border-white/5 bg-white/5 hover:bg-white/10 text-[9px] font-black uppercase tracking-widest text-gray-400 gap-1.5 rounded-lg shrink-0"
-                onClick={() => {
-                  showNotification({
-                    title: "Test Notification",
-                    message: "Your notifications are working!",
-                    type: "info",
-                    role: "admin",
-                  });
-                }}
-              >
-                <Bell className="w-3 h-3 text-primary" />
-              </Button>
             </div>
 
             <p className="text-[10px] sm:text-sm text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Manage live orders and see what to cook.</p>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 self-stretch md:self-auto w-full md:w-auto mt-2 md:mt-0">
-            <Button 
-              variant="outline" 
-              className="hidden md:flex h-9 px-4 border-white/5 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-[0.1em] text-gray-400 gap-2 rounded-xl"
-              onClick={() => {
-                showNotification({
-                  title: "Test Notification",
-                  message: "Your notifications are working!",
-                  type: "info",
-                  role: "admin",
-                });
-              }}
-            >
-              <Bell className="w-3.5 h-3.5 text-primary" />
-              <span>Test Audio</span>
-            </Button>
-
-            <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide no-scrollbar w-full md:w-auto">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar w-full md:w-auto">
               <button 
                 onClick={() => setActiveTab("individual")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
@@ -313,9 +282,9 @@ export default function AdminDashboard() {
 
       <div className="h-6 sm:h-12" />
 
-      <div className={`grid grid-cols-1 ${activeTab === 'bulk' ? 'lg:grid-cols-1' : 'lg:grid-cols-4'} gap-8`}>
+      <div className="flex flex-col gap-8">
         {/* Main Dashboard Column */}
-        <div className={`${activeTab === 'bulk' ? 'lg:col-span-1' : 'lg:col-span-3'} space-y-6`}>
+        <div className="space-y-6">
           <AnimatePresence mode="wait">
             {activeTab === "individual" || activeTab === "history" ? (
               <motion.div 
@@ -503,46 +472,8 @@ export default function AdminDashboard() {
                 </Card>
               </motion.div>
             )}
-          </AnimatePresence>
+           </AnimatePresence>
         </div>
-
-        {/* Sidebar — hide on Kitchen View */}
-        {activeTab !== 'bulk' && (
-          <div className="space-y-8">
-            <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-2xl sm:rounded-3xl">
-              <div className="bg-[#222222] p-4 sm:p-6 border-b border-white/5">
-                <h3 className="text-lg sm:text-xl font-black text-white">Today's Summary</h3>
-              </div>
-              <CardContent className="p-6 space-y-4 divide-y divide-white/5">
-                {Object.entries(bulkTotals).map(([name, count]) => (
-                  <div key={name} className="flex justify-between items-center py-4 first:pt-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl font-black text-primary">{count}x</span>
-                      <span className="font-bold text-white text-md truncate max-w-[120px]">{name}</span>
-                    </div>
-                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 text-xs font-bold">
-                      {Math.ceil(count / 10)}x
-                    </div>
-                  </div>
-                ))}
-                <div className="pt-6 flex justify-between items-center">
-                  <span className="text-lg font-black text-white">Total Items</span>
-                  <span className="text-3xl font-black text-primary border-b-4 border-primary/20">{totalItemCount}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button 
-              variant="ghost" 
-              className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-white group border border-dashed border-white/10 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
-              onClick={fetchOrders}
-              disabled={isRefreshing}
-            >
-              {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 group-active:rotate-180 transition-transform" /> }
-              <span className="text-xs sm:text-base">{isRefreshing ? "Refreshing..." : "Force Refresh"}</span>
-            </Button>
-          </div>
-        )}
       </div>
 
       <AnimatePresence>
