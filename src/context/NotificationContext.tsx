@@ -40,6 +40,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Use a ref so the polling callback always has the latest statuses without stale closure issues
   const isBaselineSet = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Create a userRef to avoid stale closures in components that capture showNotification early
+  const userRef = useRef(user);
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Load notifications from local storage on mount
   useEffect(() => {
@@ -85,8 +91,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Stable showNotification using functional state update — no stale closure
   const showNotification = useCallback((notif: Omit<NotificationItem, "id" | "timestamp" | "isRead"> & { role?: "admin" | "customer" | "superadmin" }) => {
     // If a role is specified and it doesn't match current user role, don't show the TOAST
-    // But we might still want to record it in history if it's for this user.
-    if (notif.role && user?.role !== notif.role) return;
+    if (notif.role && userRef.current?.role !== notif.role) return;
 
     const id = Math.random().toString(36).substr(2, 9);
     const newNotif: NotificationItem = {
@@ -101,7 +106,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     playSound();
     setTimeout(() => dismiss(id), 5000);
-  }, [playSound, dismiss, user?.role]);
+  }, [playSound, dismiss]);
 
   // Use a ref to keep the latest showNotification stable inside setInterval
   const showNotificationRef = useRef(showNotification);
