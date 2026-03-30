@@ -195,6 +195,17 @@ export default function CustomerMenuPage() {
           <p className="text-gray-500 font-medium">Delicious meals pre-prepared for you.</p>
         </motion.div>
 
+        {/* Search */}
+        <div className="relative mb-6">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input 
+            placeholder="Search for dishes..." 
+            className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         {/* Category Stick Bag */}
         <div className="sticky top-[72px] z-50 -mx-4 px-4 py-3 bg-background/95 backdrop-blur-md border-b border-white/5 mb-6">
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -212,17 +223,6 @@ export default function CustomerMenuPage() {
               </Button>
             ))}
           </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input 
-            placeholder="Search for dishes..." 
-            className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
         </div>
 
         {/* Closed Banner */}
@@ -248,7 +248,21 @@ export default function CustomerMenuPage() {
                 }`}
                 onClick={() => cafeteria?.isActive && setSelectedItem(item)}
               >
-                {/* Content - Left Side */}
+                {/* Image - Left Side */}
+                <div className="w-28 sm:w-32 h-full relative shrink-0">
+                  <img 
+                    src={item.imageUrl || "/placeholder.png"} 
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {!item.isAvailable && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <span className="bg-red-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Sold Out</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Content - Right Side */}
                 <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
                   <div className="space-y-0.5">
                     <h3 className="font-bold text-base text-white leading-tight truncate">{item.name}</h3>
@@ -293,21 +307,6 @@ export default function CustomerMenuPage() {
                       )}
                     </div>
                   </div>
-                </div>
-
-                {/* Image - Right Side */}
-                <div className="w-32 h-full relative shrink-0">
-                  <img 
-                    src={item.imageUrl || "/placeholder.png"} 
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {!item.isAvailable && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="bg-red-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Sold Out</span>
-                    </div>
-                  )}
-                  {/* Selected count overlay if needed, but we have the button downstairs */}
                 </div>
               </motion.div>
             ))}
