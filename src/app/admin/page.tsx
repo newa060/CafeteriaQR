@@ -54,6 +54,7 @@ export default function AdminDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+  const [orderToReject, setOrderToReject] = useState<string | null>(null);
   const [bulkReadyQtys, setBulkReadyQtys] = useState<{ [key: string]: string }>({});
   const { showNotification } = useNotification();
   const notifiedOrderIds = useRef<Set<string>>(new Set());
@@ -350,9 +351,16 @@ export default function AdminDashboard() {
                                 No Receipt
                               </div>
                             )}
-                            <div className="flex gap-2 w-full">
+                            <div className="flex gap-2 sm:gap-3 w-full">
                               <Button 
-                                className="w-full h-11 sm:h-14 text-base sm:text-xl font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/30"
+                                variant="outline"
+                                className="w-[35%] h-11 sm:h-14 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl border-red-500/20 text-red-500 hover:bg-red-500/10 transition-all shadow-lg"
+                                onClick={() => setOrderToReject(order._id)}
+                              >
+                                Reject
+                              </Button>
+                              <Button 
+                                className="w-[65%] h-11 sm:h-14 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                 onClick={() => updateOrderStatus(order._id, "accepted")}
                               >
                                 Accept Order
@@ -541,7 +549,6 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
               className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center overflow-hidden"
             >
-              {/* Background gradient hint */}
               <div className="absolute -top-10 -left-10 w-40 h-40 bg-red-500/20 blur-[60px] rounded-full pointer-events-none" />
               
               <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6 mt-2 relative z-10 border border-red-500/20 shadow-inner">
@@ -571,6 +578,59 @@ export default function AdminDashboard() {
                   }}
                 >
                   Yes, Delete
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Reject Order Confirmation Modal */}
+      <AnimatePresence>
+        {orderToReject && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setOrderToReject(null)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center overflow-hidden"
+            >
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-red-500/20 blur-[60px] rounded-full pointer-events-none" />
+              
+              <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6 mt-2 relative z-10 border border-red-500/20 shadow-inner">
+                <X className="w-8 h-8 text-red-500 drop-shadow-lg" />
+              </div>
+              
+              <div className="relative z-10 mb-8">
+                <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Reject Order?</h3>
+                <p className="text-sm text-gray-400 leading-relaxed max-w-[280px]">
+                  The payment screenshot could not be verified. This will cancel the order and notify the customer.
+                </p>
+              </div>
+
+              <div className="flex gap-4 w-full relative z-10">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold"
+                  onClick={() => setOrderToReject(null)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 h-14 rounded-2xl bg-red-600 hover:bg-red-500 border-none text-white font-black shadow-xl shadow-red-500/30"
+                  onClick={() => {
+                    updateOrderStatus(orderToReject, "cancelled");
+                    setOrderToReject(null);
+                  }}
+                >
+                  Yes, Reject
                 </Button>
               </div>
             </motion.div>
