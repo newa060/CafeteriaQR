@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white flex">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0d0d0d]/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0d0d0d]/80 backdrop-blur-xl border-b border-white/5 px-4 h-16 flex items-center justify-between">
         <h1 className="text-xl font-bold tracking-tight text-primary">Admin</h1>
         <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
@@ -103,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 lg:pl-64">
-        <div className="flex-1 p-6 lg:p-8 pt-20 lg:pt-8 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 overflow-y-auto overflow-x-hidden">
           {children}
         </div>
       </main>

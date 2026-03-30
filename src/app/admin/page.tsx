@@ -151,25 +151,25 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-10 max-w-7xl">
+    <div className="space-y-6 md:space-y-10 max-w-7xl">
       {/* Sticky Header Area */}
-      <div className="sticky top-[72px] lg:top-[-32px] z-30 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-6 lg:-mx-8 px-6 lg:px-8 py-6 mb-10 border-b border-white/5 shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="sticky top-16 lg:top-[-32px] z-30 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 mb-6 md:mb-10 border-b border-white/5 shadow-2xl transition-all">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-none">Canteen Dashboard</h1>
+            <div className="flex items-center gap-3 mb-1 sm:mb-2">
+              <h1 className="text-[22px] sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-none">Canteen Dashboard</h1>
               <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center">
                 <div className="w-1 h-1 rounded-full bg-green-500" />
-                <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
+                <span className="text-[8px] sm:text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
               </div>
             </div>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
+            <p className="text-[10px] sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
           </div>
           
-          <div className="flex items-center gap-4 self-start md:self-auto">
+          <div className="flex items-center gap-3 sm:gap-4 self-start md:self-auto w-full md:w-auto">
             <Button 
               variant="outline" 
-              className="h-9 px-3 border-white/5 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-400 gap-2 rounded-xl"
+              className="h-9 px-3 border-white/5 bg-white/5 hover:bg-white/10 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400 gap-2 rounded-xl shrink-0"
               onClick={() => {
                 showNotification({
                   title: "Test Notification",
@@ -179,13 +179,14 @@ export default function AdminDashboard() {
               }}
             >
               <Bell className="w-3.5 h-3.5 text-primary" />
-              Test Audio
+              <span className="hidden xs:inline">Test Audio</span>
+              <span className="xs:hidden">Test</span>
             </Button>
             
-            <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
+            <div className="flex items-center gap-1 sm:gap-2 bg-[#1a1a1a] p-1 rounded-xl sm:rounded-2xl border border-white/5 shadow-2xl max-w-full overflow-x-auto scrollbar-hide no-scrollbar flex-1 md:flex-none">
             <button 
               onClick={() => setActiveTab("individual")}
-              className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === "individual" 
                   ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
@@ -195,7 +196,7 @@ export default function AdminDashboard() {
             </button>
             <button 
               onClick={() => setActiveTab("bulk")}
-              className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === "bulk" 
                   ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
@@ -205,7 +206,7 @@ export default function AdminDashboard() {
             </button>
             <button 
               onClick={() => setActiveTab("history")}
-              className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === "history" 
                   ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
@@ -235,16 +236,16 @@ export default function AdminDashboard() {
                     activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
                   ).map((order) => (
                   <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
-                    <CardContent className="p-7 space-y-6">
+                    <CardContent className="p-5 sm:p-7 space-y-4 sm:space-y-6">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
-                          <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Customer Name</p>
-                          <h3 className="text-xl font-extrabold text-white truncate max-w-[150px]">{order.customerName}</h3>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Customer Name</p>
+                          <h3 className="text-lg md:text-xl font-extrabold text-white truncate max-w-[150px]">{order.customerName}</h3>
                         </div>
                         <Badge variant={
                           order.status === "pending" ? "warning" : 
                           (order.status === "ready" || order.status === "accepted" || order.status === "preparing") ? "default" : "destructive"
-                        } className="px-3 py-1 rounded-lg">
+                        } className="px-2 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs">
                           {order.status === "ready" ? "Ready" : 
                            (order.status === "accepted" || order.status === "preparing") ? "Accepted" : 
                            order.status === "pending" ? "Pending" : "Rejected"}
@@ -252,8 +253,8 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="space-y-1 py-1">
-                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Time Slot</p>
-                        <p className="text-3xl md:text-4xl font-black text-primary leading-none tracking-tight">{order.timeSlot}</p>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Time Slot</p>
+                        <p className="text-2xl sm:text-3xl md:text-4xl font-black text-primary leading-none tracking-tight">{order.timeSlot}</p>
                       </div>
 
                       <div className="space-y-2 border-t border-white/5 pt-4">
@@ -289,13 +290,13 @@ export default function AdminDashboard() {
                             <div className="flex gap-2 w-full">
                               <Button 
                                 variant="outline"
-                                className="w-1/3 h-12 sm:h-14 text-xs sm:text-sm font-black border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
+                                className="w-1/3 h-11 sm:h-14 text-xs sm:text-sm font-black border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl sm:rounded-2xl transition-all"
                                 onClick={() => setRejectConfirmId(order._id)}
                               >
                                 Reject
                               </Button>
                               <Button 
-                                className="w-2/3 h-12 sm:h-14 text-lg sm:text-xl font-black rounded-2xl shadow-xl shadow-primary/30"
+                                className="w-2/3 h-11 sm:h-14 text-base sm:text-xl font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/30"
                                 onClick={() => updateOrderStatus(order._id, "accepted")}
                               >
                                 Accept
@@ -337,14 +338,14 @@ export default function AdminDashboard() {
                 className="flex flex-col gap-6"
               >
                 {/* Top Metrics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <Card className="bg-primary/10 border-primary/20 text-center py-5 md:py-8">
-                    <p className="text-[9px] md:text-xs font-bold text-primary uppercase tracking-widest mb-1">Items to Cook</p>
-                    <p className="text-3xl md:text-5xl font-black text-primary">{totalItemCount}</p>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <Card className="bg-primary/10 border-primary/20 text-center py-4 sm:py-6 md:py-8">
+                    <p className="text-[8px] sm:text-[10px] md:text-xs font-bold text-primary uppercase tracking-widest mb-1">Items to Cook</p>
+                    <p className="text-2xl sm:text-4xl md:text-5xl font-black text-primary">{totalItemCount}</p>
                   </Card>
-                  <Card className="bg-white/5 border-white/5 text-center py-5 md:py-8">
-                    <p className="text-[9px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
-                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status === "accepted" || o.status === "preparing").length}</p>
+                  <Card className="bg-white/5 border-white/5 text-center py-4 sm:py-6 md:py-8">
+                    <p className="text-[8px] sm:text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
+                    <p className="text-2xl sm:text-4xl md:text-5xl font-black text-white">{orders.filter(o => o.status === "accepted" || o.status === "preparing").length}</p>
                   </Card>
                 </div>
 
@@ -358,13 +359,13 @@ export default function AdminDashboard() {
                     {Object.entries(bulkBreakdown).map(([name, data]) => (
                       <div key={name} className="flex flex-col bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
                         {/* Header: Item Name and Total */}
-                        <div className="flex justify-between items-center p-5 md:p-7 bg-white/5 border-b border-white/5">
+                        <div className="flex justify-between items-center p-4 sm:p-5 md:p-7 bg-white/5 border-b border-white/5">
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Item To Prep</p>
-                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight">{name}</h3>
+                            <p className="text-[8px] sm:text-[10px] font-black text-primary uppercase tracking-[0.2em]">Item To Prep</p>
+                            <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-white tracking-tight">{name}</h3>
                           </div>
-                          <div className="bg-primary/20 border border-primary/30 px-5 py-2 rounded-2xl">
-                            <span className="text-3xl md:text-5xl font-black text-primary italic">{String(data.total)}x</span>
+                          <div className="bg-primary/20 border border-primary/30 px-3 sm:px-5 py-1 sm:py-2 rounded-xl sm:rounded-2xl">
+                            <span className="text-2xl sm:text-4xl md:text-5xl font-black text-primary italic">{String(data.total)}x</span>
                           </div>
                         </div>
                         
@@ -408,9 +409,9 @@ export default function AdminDashboard() {
 
         {/* Sidebar / Statistics Panel */}
         <div className="space-y-8">
-          <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-3xl">
-            <div className="bg-[#222222] p-6 border-b border-white/5">
-              <h3 className="text-xl font-black text-white">Today's Summary</h3>
+          <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-2xl sm:rounded-3xl">
+            <div className="bg-[#222222] p-4 sm:p-6 border-b border-white/5">
+              <h3 className="text-lg sm:text-xl font-black text-white">Today's Summary</h3>
             </div>
             <CardContent className="p-6 space-y-4 divide-y divide-white/5">
               {Object.entries(bulkTotals).map(([name, count]) => (
@@ -433,12 +434,12 @@ export default function AdminDashboard() {
 
           <Button 
             variant="ghost" 
-            className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-white group border border-dashed border-white/10 h-14 rounded-2xl"
+            className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-white group border border-dashed border-white/10 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
             onClick={fetchOrders}
             disabled={isRefreshing}
           >
-            {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5 group-active:rotate-180 transition-transform" /> }
-            <span>{isRefreshing ? "Refreshing..." : "Force Refresh"}</span>
+            {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 group-active:rotate-180 transition-transform" /> }
+            <span className="text-xs sm:text-base">{isRefreshing ? "Refreshing..." : "Force Refresh"}</span>
           </Button>
         </div>
       </div>
@@ -456,10 +457,10 @@ export default function AdminDashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative max-w-2xl w-full h-[85vh] bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/10 flex flex-col pt-2 shadow-2xl"
+              className="relative max-w-2xl w-full h-[85vh] bg-[#0a0a0a] rounded-3xl sm:rounded-[2.5rem] overflow-hidden border border-white/10 flex flex-col pt-2 shadow-2xl"
             >
               {/* Modal Header */}
-              <div className="p-6 flex items-center justify-between border-b border-white/5">
+              <div className="p-4 sm:p-6 flex items-center justify-between border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 text-primary" />
