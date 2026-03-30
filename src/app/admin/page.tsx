@@ -447,45 +447,58 @@ export default function AdminDashboard() {
                 <Card className="bg-[#111111] border-white/5 shadow-2xl">
                   <div className="p-5 md:p-8 border-b border-white/5">
                     <h3 className="text-xl md:text-2xl font-black text-white">What to Cook Now</h3>
-                    <p className="text-sm text-gray-500 mt-1">Quick tap to mark items as cooked instantly. No typing required.</p>
+                    <p className="text-sm text-gray-500 mt-1">Tap + or − to set how many you've cooked, then press Done.</p>
                   </div>
                   <CardContent className="p-3 md:p-6">
                     <div className="flex flex-col gap-3">
-                      {Object.entries(bulkBreakdown).map(([name, data]) => (
-                        <div key={name} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-zinc-900 border border-white/5 rounded-2xl gap-3">
-                          {/* Left side: Item Name & Total Needed */}
-                          <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="bg-primary/20 border border-primary/30 w-12 h-12 sm:w-14 sm:h-14 flex flex-col items-center justify-center rounded-xl shrink-0">
-                              <span className="text-xl sm:text-2xl font-black text-primary leading-none">{data.total}</span>
-                              <span className="text-[8px] sm:text-[10px] font-bold text-primary uppercase mt-0.5">Left</span>
+                      {Object.entries(bulkBreakdown).map(([name, data]) => {
+                        const currentQty = parseInt(bulkReadyQtys[name] || "0");
+                        return (
+                          <div key={name} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-zinc-900 border border-white/5 rounded-2xl gap-3">
+                            {/* Left side: Item Name & Total Needed */}
+                            <div className="flex items-center gap-3 sm:gap-4 flex-1">
+                              <div className="bg-primary/20 border border-primary/30 w-12 h-12 flex flex-col items-center justify-center rounded-xl shrink-0">
+                                <span className="text-xl sm:text-2xl font-black text-primary leading-none">{data.total}</span>
+                                <span className="text-[8px] sm:text-[10px] font-bold text-primary uppercase mt-0.5">Left</span>
+                              </div>
+                              <div className="flex flex-col">
+                                <h3 className="text-base sm:text-lg font-black text-white leading-tight">{name}</h3>
+                              </div>
                             </div>
-                            <div className="flex flex-col">
-                              <h3 className="text-base sm:text-lg font-black text-white leading-tight">{name}</h3>
-                            </div>
-                          </div>
 
-                          {/* Right side: Quick Action Buttons */}
-                          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-                            <Button 
-                              variant="outline"
-                              className="flex-1 sm:flex-none h-10 sm:h-12 bg-zinc-800 border-white/10 hover:bg-white/10 text-white rounded-xl text-xs sm:text-sm font-bold gap-1.5"
-                              onClick={() => handleBulkReady(name, 1)}
-                              disabled={isRefreshing}
-                            >
-                              {isRefreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5 text-gray-400"/>}
-                              Cook 1 Only
-                            </Button>
-                            <Button 
-                              className="flex-1 sm:flex-none h-10 sm:h-12 bg-green-600 hover:bg-green-500 active:scale-95 transition-all text-white rounded-xl text-xs sm:text-sm font-black shadow-lg shadow-green-900/40 gap-1.5"
-                              onClick={() => handleBulkReady(name, data.total)}
-                              disabled={isRefreshing}
-                            >
-                              {isRefreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5"/>}
-                              Cook All {data.total > 1 ? `(${data.total})` : ''}
-                            </Button>
+                            {/* Right side: Compact Stepper + Action */}
+                            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                              <div className="flex items-center bg-black/40 border border-white/10 rounded-xl h-10 sm:h-12">
+                                <button 
+                                  className="w-10 sm:w-12 h-full flex items-center justify-center text-white hover:bg-white/10 rounded-l-xl transition-all font-black"
+                                  onClick={() => setBulkReadyQtys(prev => ({
+                                    ...prev, [name]: String(Math.max(0, (parseInt(prev[name] || "0") - 1)))
+                                  }))}
+                                >−</button>
+                                <div className="w-10 sm:w-12 flex items-center justify-center text-lg font-black text-white tabular-nums">
+                                  {currentQty}
+                                </div>
+                                <button 
+                                  className="w-10 sm:w-12 h-full flex items-center justify-center text-primary hover:bg-white/10 rounded-r-xl transition-all font-black"
+                                  onClick={() => setBulkReadyQtys(prev => ({
+                                    ...prev, [name]: String(Math.min(data.total, (parseInt(prev[name] || "0") + 1)))
+                                  }))}
+                                >+</button>
+                              </div>
+
+                              <Button 
+                                className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 bg-green-600 hover:bg-green-500 active:scale-95 transition-all text-white rounded-xl text-xs sm:text-sm font-black shadow-lg shadow-green-900/40 gap-1.5"
+                                onClick={() => handleBulkReady(name, currentQty)}
+                                disabled={currentQty <= 0 || isRefreshing}
+                              >
+                                {isRefreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5"/>}
+                                <span className="hidden sm:inline">Done</span>
+                                <span className="sm:hidden">Confirm</span>
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {Object.keys(bulkBreakdown).length === 0 && (
                         <div className="py-10 text-center text-gray-500 font-bold italic opacity-50">
                           No items to cook right now. 🎉
