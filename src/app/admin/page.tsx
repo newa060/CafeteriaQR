@@ -153,23 +153,23 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6 md:space-y-10 max-w-7xl">
       {/* Sticky Header Area */}
-      <div className="sticky top-16 lg:top-[-32px] z-30 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 mb-6 md:mb-10 border-b border-white/5 shadow-2xl transition-all">
+      <div className="sticky top-16 lg:top-[-32px] z-40 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 sm:py-6 mb-8 md:mb-12 border-b border-white/5 shadow-2xl transition-all">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1 sm:mb-2">
-              <h1 className="text-[22px] sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-none">Canteen Dashboard</h1>
-              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center">
+              <h1 className="text-[20px] sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-none truncate">Canteen Dashboard</h1>
+              <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse self-center shrink-0">
                 <div className="w-1 h-1 rounded-full bg-green-500" />
-                <span className="text-[8px] sm:text-[9px] font-bold text-green-500 uppercase tracking-widest">Live</span>
+                <span className="text-[8px] sm:text-[9px] font-bold text-green-500 uppercase tracking-widest leading-none">Live</span>
               </div>
             </div>
-            <p className="text-[10px] sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
+            <p className="text-[10px] sm:text-sm text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Manage live orders and see what to cook.</p>
           </div>
           
-          <div className="flex items-center gap-3 sm:gap-4 self-start md:self-auto w-full md:w-auto">
+          <div className="flex items-center gap-3 sm:gap-4 self-stretch md:self-auto w-full md:w-auto">
             <Button 
               variant="outline" 
-              className="h-9 px-3 border-white/5 bg-white/5 hover:bg-white/10 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400 gap-2 rounded-xl shrink-0"
+              className="h-9 px-3 border-white/5 bg-white/5 hover:bg-white/10 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] text-gray-400 gap-2 rounded-xl shrink-0"
               onClick={() => {
                 showNotification({
                   title: "Test Notification",
@@ -179,14 +179,14 @@ export default function AdminDashboard() {
               }}
             >
               <Bell className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden xs:inline">Test Audio</span>
-              <span className="xs:hidden">Test</span>
+              <span className="hidden sm:inline">Test Audio</span>
+              <span className="sm:hidden">Test</span>
             </Button>
             
-            <div className="flex items-center gap-1 sm:gap-2 bg-[#1a1a1a] p-1 rounded-xl sm:rounded-2xl border border-white/5 shadow-2xl max-w-full overflow-x-auto scrollbar-hide no-scrollbar flex-1 md:flex-none">
+            <div className="flex items-center gap-1 sm:gap-2 bg-[#1a1a1a] p-1 rounded-xl sm:rounded-2xl border border-white/5 shadow-2xl max-w-full overflow-x-auto scrollbar-hide no-scrollbar flex-1 md:flex-none min-w-0">
             <button 
               onClick={() => setActiveTab("individual")}
-              className={`flex-1 md:flex-none px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none px-4 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black transition-all whitespace-nowrap ${
                 activeTab === "individual" 
                   ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
             </button>
             <button 
               onClick={() => setActiveTab("bulk")}
-              className={`flex-1 md:flex-none px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none px-4 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black transition-all whitespace-nowrap ${
                 activeTab === "bulk" 
                   ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
             </button>
             <button 
               onClick={() => setActiveTab("history")}
-              className={`flex-1 md:flex-none px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none px-4 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black transition-all whitespace-nowrap ${
                 activeTab === "history" 
                   ? "bg-primary text-white shadow-lg shadow-primary/20" 
                   : "text-gray-500 hover:text-white"
