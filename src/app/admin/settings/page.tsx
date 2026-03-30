@@ -161,7 +161,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="space-y-10 max-w-4xl mx-auto pb-20 pt-4 lg:pt-0">
+    <div className="space-y-10 max-w-4xl mx-auto pb-20 lg:pt-0">
       <div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">Settings</h1>
         <p className="text-[11px] sm:text-base text-gray-500 font-medium mt-2">Manage your cafeteria profile, payment logic, and operational hours.</p>

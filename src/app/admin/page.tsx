@@ -154,7 +154,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6 md:space-y-10 max-w-7xl pt-4 lg:pt-0 px-4 sm:px-6 md:px-8">
       {/* Sticky Header Area */}
-      <div className="sticky top-16 lg:top-[-32px] z-40 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2.5 sm:py-6 mb-12 md:mb-12 border-b border-white/5 shadow-2xl transition-all">
+      <div className="sticky top-16 lg:top-[-32px] z-30 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-0 pb-2.5 sm:py-6 mb-12 md:mb-12 border-b border-white/5 shadow-2xl transition-all">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-4 mb-1 sm:mb-2">
@@ -173,7 +173,8 @@ export default function AdminDashboard() {
                   showNotification({
                     title: "Test Notification",
                     message: "Your notifications are working!",
-                    type: "info"
+                    type: "info",
+                    role: "admin",
                   });
                 }}
               >
@@ -237,9 +238,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Main Dashboard Grid */}
-        <div className="lg:col-span-3 space-y-6">
+      <div className={`grid grid-cols-1 ${activeTab === 'bulk' ? 'lg:grid-cols-1' : 'lg:grid-cols-4'} gap-8`}>
+        {/* Main Dashboard Column */}
+        <div className={`${activeTab === 'bulk' ? 'lg:col-span-1' : 'lg:col-span-3'} space-y-6`}>
           <AnimatePresence mode="wait">
             {activeTab === "individual" || activeTab === "history" ? (
               <motion.div 
@@ -426,40 +427,42 @@ export default function AdminDashboard() {
         </div>
 
         {/* Sidebar / Statistics Panel */}
-        <div className="space-y-8">
-          <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-2xl sm:rounded-3xl">
-            <div className="bg-[#222222] p-4 sm:p-6 border-b border-white/5">
-              <h3 className="text-lg sm:text-xl font-black text-white">Today's Summary</h3>
-            </div>
-            <CardContent className="p-6 space-y-4 divide-y divide-white/5">
-              {Object.entries(bulkTotals).map(([name, count]) => (
-                <div key={name} className="flex justify-between items-center py-4 first:pt-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-black text-primary">{count}x</span>
-                    <span className="font-bold text-white text-md truncate max-w-[120px]">{name}</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 text-xs font-bold">
-                    {Math.ceil(count / 10)}x
-                  </div>
-                </div>
-              ))}
-              <div className="pt-6 flex justify-between items-center">
-                <span className="text-lg font-black text-white">Total Items</span>
-                <span className="text-3xl font-black text-primary border-b-4 border-primary/20">{totalItemCount}</span>
+        {activeTab !== 'bulk' && (
+          <div className="space-y-8">
+            <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-2xl sm:rounded-3xl">
+              <div className="bg-[#222222] p-4 sm:p-6 border-b border-white/5">
+                <h3 className="text-lg sm:text-xl font-black text-white">Today's Summary</h3>
               </div>
-            </CardContent>
-          </Card>
+              <CardContent className="p-6 space-y-4 divide-y divide-white/5">
+                {Object.entries(bulkTotals).map(([name, count]) => (
+                  <div key={name} className="flex justify-between items-center py-4 first:pt-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-black text-primary">{count}x</span>
+                      <span className="font-bold text-white text-md truncate max-w-[120px]">{name}</span>
+                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 text-xs font-bold">
+                      {Math.ceil(count / 10)}x
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-6 flex justify-between items-center">
+                  <span className="text-lg font-black text-white">Total Items</span>
+                  <span className="text-3xl font-black text-primary border-b-4 border-primary/20">{totalItemCount}</span>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Button 
-            variant="ghost" 
-            className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-white group border border-dashed border-white/10 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
-            onClick={fetchOrders}
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 group-active:rotate-180 transition-transform" /> }
-            <span className="text-xs sm:text-base">{isRefreshing ? "Refreshing..." : "Force Refresh"}</span>
-          </Button>
-        </div>
+            <Button 
+              variant="ghost" 
+              className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-white group border border-dashed border-white/10 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
+              onClick={fetchOrders}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 group-active:rotate-180 transition-transform" /> }
+              <span className="text-xs sm:text-base">{isRefreshing ? "Refreshing..." : "Force Refresh"}</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Screenshot Modal */}
