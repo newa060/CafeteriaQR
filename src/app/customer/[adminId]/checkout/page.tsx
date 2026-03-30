@@ -178,6 +178,21 @@ export default function CheckoutPage() {
       return;
     }
     
+    // Validate mandatory payment details
+    if (!paymentName.trim() && !user?.name) {
+      setError("Please enter your name or payment remarks");
+      const el = document.getElementById("payment-name-input");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    if (!screenshotUrl) {
+      setError("Please upload your payment screenshot");
+      const el = document.getElementById("screenshot-upload-btn");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     setSubmitting(true);
     setError("");
 
@@ -359,8 +374,11 @@ export default function CheckoutPage() {
               )}
               
               <div className="w-full space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm text-gray-400">Payment Name/Remarks</label>
+                <div className="space-y-2" id="payment-name-input">
+                  <label className="text-sm text-gray-400 flex items-center justify-between">
+                    <span>Payment Name/Remarks</span>
+                    <span className="text-[10px] text-primary font-bold uppercase tracking-widest">Required</span>
+                  </label>
                   <Input 
                     placeholder="e.g. John Doe / Burger" 
                     value={paymentName}
@@ -377,13 +395,14 @@ export default function CheckoutPage() {
                   onChange={handleReceiptUpload} 
                 />
                 <button
+                  id="screenshot-upload-btn"
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
                   disabled={uploadingReceipt}
                   className={`w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all ${
                     screenshotUrl 
                       ? "bg-green-500/10 border-green-500/50 text-green-500" 
-                      : "bg-white/5 border-white/10 text-gray-400 hover:text-white"
+                      : "bg-white/5 border-white/10 text-gray-400 hover:text-white border-primary/20"
                   }`}
                 >
                   {uploadingReceipt ? (
