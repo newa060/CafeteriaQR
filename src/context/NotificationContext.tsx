@@ -49,20 +49,28 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Load notifications from local storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("customer_notifications");
+    if (!user?._id) {
+      setNotifications([]);
+      return;
+    }
+    const saved = localStorage.getItem(`notifications_${user._id}`);
     if (saved) {
       try {
         setNotifications(JSON.parse(saved));
       } catch (e) {
         console.error("Failed to parse notifications", e);
       }
+    } else {
+      setNotifications([]);
     }
-  }, []);
+  }, [user?._id]);
 
   // Save notifications to local storage whenever they change
   useEffect(() => {
-    localStorage.setItem("customer_notifications", JSON.stringify(notifications));
-  }, [notifications]);
+    if (user?._id) {
+      localStorage.setItem(`notifications_${user._id}`, JSON.stringify(notifications));
+    }
+  }, [notifications, user?._id]);
 
   // Clear active toasts when role changes to prevent crosstalk
   useEffect(() => {
@@ -96,6 +104,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const id = Math.random().toString(36).substr(2, 9);
     const newNotif: NotificationItem = {
       ...notif,
+      role: notif.role || (userRef.current?.role as any),
       id,
       timestamp: new Date().toISOString(),
       isRead: false
@@ -182,23 +191,26 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [user]);
 
   const markAllAsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-  }, []);
+    setNotifications(prev => prev.map(n => 
+      (!n.role || n.role === user?.role) ? { ...n, isRead: true } : n
+    ));
+  }, [user?.role]);
 
   const clearNotifications = useCallback(() => {
-    setNotifications([]);
-  }, []);
+    setNotifications(prev => prev.filter(n => n.role && n.role !== user?.role));
+  }, [user?.role]);
 
   const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const filteredNotifications = notifications.filter(n => !n.role || n.role === user?.role);
+  const unreadCount = filteredNotifications.filter(n => !n.isRead).length;
 
   return (
     <NotificationContext.Provider value={{ 
       showNotification, 
-      notifications, 
+      notifications: filteredNotifications, 
       unreadCount, 
       markAllAsRead, 
       clearNotifications,
