@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, Suspense, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -74,6 +74,7 @@ const panelConfig: Record<PanelType, PanelConfig> = {
 function LoginForm({ panel }: { panel: PanelType }) {
   const config = panelConfig[panel];
   const { user, loading: authLoading, login } = useAuth();
+  const router = useRouter();
 
   const searchParams = useSearchParams();
   const urlAdminId = searchParams.get("adminId") || "";
@@ -91,12 +92,9 @@ function LoginForm({ panel }: { panel: PanelType }) {
   // Redirect if already logged in with the correct role
   React.useEffect(() => {
     if (!authLoading && user && user.role === panel) {
-      const timer = setTimeout(() => {
-        window.location.href = config.redirectTo;
-      }, 500);
-      return () => clearTimeout(timer);
+      router.replace(config.redirectTo);
     }
-  }, [user, authLoading, panel, config.redirectTo]);
+  }, [user, authLoading, panel, config.redirectTo, router]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();

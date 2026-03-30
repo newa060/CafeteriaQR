@@ -62,15 +62,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (newUser: User, redirectTo?: string) => {
     setUser(newUser);
     if (redirectTo) {
-      router.push(redirectTo);
+      router.replace(redirectTo);
       return;
     }
     if (newUser.role === "superadmin") {
-      router.push("/superadmin");
+      router.replace("/superadmin");
     } else if (newUser.role === "admin") {
-      router.push("/admin");
+      router.replace("/admin");
     } else {
-      router.push("/customer");
+      router.replace("/customer");
     }
   };
 
