@@ -103,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 lg:pl-64">
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 pt-14 lg:pt-8 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 overflow-y-auto overflow-x-hidden">
           {children}
         </div>
       </main>

@@ -37,6 +37,10 @@ export default function MenuManagementPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   
+  // Delete confirmation state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
+  
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -157,11 +161,21 @@ export default function MenuManagementPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
+  const handleDelete = (id: string, name: string) => {
+    setItemToDelete({ id, name });
+    setIsDeleteModalOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (!itemToDelete) return;
+    
     try {
-      const res = await fetch(`/api/admin/menu?id=${id}`, { method: "DELETE" });
-      if (res.ok) fetchMenu();
+      const res = await fetch(`/api/admin/menu?id=${itemToDelete.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setIsDeleteModalOpen(false);
+        setItemToDelete(null);
+        fetchMenu();
+      }
     } catch (err) {
       console.error("Delete failed:", err);
     }
@@ -276,7 +290,7 @@ export default function MenuManagementPage() {
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(item)} className="hover:bg-primary/10 hover:text-primary">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item._id)} className="hover:bg-red-500/10 hover:text-red-500">
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item._id, item.name)} className="hover:bg-red-500/10 hover:text-red-500">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -417,6 +431,55 @@ export default function MenuManagementPage() {
                   {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : editingItem ? "Update Item" : "Create Item"}
                 </Button>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteModalOpen && itemToDelete && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+              onClick={() => setIsDeleteModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-sm bg-[#0a0a0a] border border-red-500/20 rounded-3xl shadow-[0_0_50px_rgba(239,68,68,0.15)] overflow-hidden"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20 relative">
+                  <div className="absolute inset-0 rounded-full bg-red-500/5 animate-ping" />
+                  <Trash2 className="w-10 h-10 text-red-500" />
+                </div>
+                
+                <h2 className="text-2xl font-black text-white mb-2">Delete Item?</h2>
+                <p className="text-sm text-gray-500 leading-relaxed px-4">
+                  Are you sure you want to remove <span className="text-white font-bold">"{itemToDelete.name}"</span>? This action cannot be undone.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4 mt-10">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    className="h-14 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-500 hover:text-white hover:bg-white/5 border border-white/5"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={executeDelete}
+                    className="h-14 rounded-2xl text-xs font-black uppercase tracking-widest bg-red-500 hover:bg-red-600 text-white shadow-xl shadow-red-500/20"
+                  >
+                    Confirm Delete
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}
