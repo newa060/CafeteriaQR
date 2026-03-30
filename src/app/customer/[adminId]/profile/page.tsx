@@ -14,8 +14,6 @@ import {
   XCircle,
   AlertCircle,
   Loader2,
-  Save,
-  Mail,
   User as UserIcon,
   GraduationCap,
   Trash2,
@@ -59,8 +57,8 @@ export default function CustomerProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
   const { unreadCount, markAllAsRead } = useNotification();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
@@ -130,41 +128,55 @@ export default function CustomerProfilePage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircle2 className="w-4 h-4" />;
-      case 'pending': return <Clock className="w-4 h-4" />;
-      case 'cancelled': return <XCircle className="w-4 h-4" />;
-      default: return <Clock className="w-4 h-4" />;
-    }
-  };
-  const handleDeleteOrder = (orderId: string) => {
-    setDeleteConfirmId(orderId);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteConfirmId) return;
-    
-    setIsDeleting(true);
+  const handleDeleteOrder = async (orderId: string) => {
+    setIsDeletingId(orderId);
     setError("");
+    setMessage("");
 
     try {
-      const res = await fetch(`/api/customer/orders/${deleteConfirmId}`, {
+      const res = await fetch(`/api/customer/orders/${orderId}`, {
         method: "DELETE",
       });
 
       if (res.ok) {
-        setOrders(prev => prev.filter(order => order._id !== deleteConfirmId));
-        setDeleteConfirmId(null);
+        setOrders(prev => prev.filter(order => order._id !== orderId));
         setMessage("Order removed from history");
         setTimeout(() => setMessage(""), 3000);
       } else {
-        setError("Failed to remove history entry");
+        const data = await res.json();
+        setError(data.error || "Failed to remove entry");
       }
     } catch (err) {
       setError("Something went wrong");
     } finally {
-      setIsDeleting(false);
+      setIsDeletingId(null);
+    }
+  };
+
+  const handleClearHistory = async () => {
+    if (!confirm("Are you sure you want to clear your entire order history? This cannot be undone.")) return;
+    
+    setIsClearing(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/customer/orders", {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setOrders([]);
+        setShowAllHistory(false);
+        setMessage("All history cleared successfully");
+        setTimeout(() => setMessage(""), 3000);
+      } else {
+        setError("Failed to clear history");
+      }
+    } catch (err) {
+      setError("Something went wrong");
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -330,16 +342,28 @@ export default function CustomerProfilePage() {
               <History className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-bold">Recent Orders</h3>
             </div>
-            {orders.length > 3 && (
+            <div className="flex items-center gap-2">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => setShowAllHistory(true)}
-                className="text-xs font-bold text-primary hover:bg-primary/10"
+                onClick={handleClearHistory}
+                disabled={isClearing || loadingOrders || orders.length === 0}
+                className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 h-8 px-2 rounded-lg"
               >
-                See All
+                {isClearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+                Clear All
               </Button>
-            )}
+              {orders.length > 3 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowAllHistory(true)}
+                  className="text-xs font-bold text-primary hover:bg-primary/10"
+                >
+                  See All
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -391,13 +415,18 @@ export default function CustomerProfilePage() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            disabled={isDeletingId === order._id}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteOrder(order._id);
                             }}
                             className="w-8 h-8 text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {isDeletingId === order._id ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -443,9 +472,21 @@ export default function CustomerProfilePage() {
                 </Button>
                 <h2 className="text-xl font-bold">Complete History</h2>
               </div>
-              <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-white/10">
-                {orders.length} Total
-              </Badge>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleClearHistory}
+                  disabled={isClearing || orders.length === 0}
+                  className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 h-8 px-3 rounded-xl border border-red-500/10"
+                >
+                  {isClearing ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <Trash2 className="w-3 h-3 mr-1.5" />}
+                  Clear History
+                </Button>
+                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-white/10">
+                  {orders.length} Total
+                </Badge>
+              </div>
             </header>
 
             {/* List */}
@@ -492,13 +533,18 @@ export default function CustomerProfilePage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          disabled={isDeletingId === order._id}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteOrder(order._id);
                           }}
                           className="w-10 h-10 text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition-all"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          {isDeletingId === order._id ? (
+                            <Loader2 className="w-5 h-5 animate-spin text-red-500" />
+                          ) : (
+                            <Trash2 className="w-5 h-5" />
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -514,65 +560,6 @@ export default function CustomerProfilePage() {
               </p>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {deleteConfirmId && (
-          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setDeleteConfirmId(null)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-2xl"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ 
-                scale: 1, 
-                opacity: 1, 
-                y: 0,
-                transition: { type: "spring", damping: 15, stiffness: 300 }
-              }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-sm bg-zinc-950/70 border border-white/10 rounded-[2.5rem] p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-3xl overflow-hidden"
-            >
-              {/* Subtle top light effect */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              
-              <div className="text-center space-y-6 relative z-10">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center mx-auto shadow-xl shadow-red-500/20 rotate-3">
-                  <Trash2 className="w-10 h-10 text-white" />
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-white tracking-tight">Delete Order?</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed px-2">
-                    Are you sure you want to remove this order from your history? 
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-3 pt-2">
-                  <Button
-                    className="w-full h-14 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black text-lg shadow-xl shadow-red-500/30 active:scale-95 transition-all"
-                    onClick={handleConfirmDelete}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "Yes, Delete It"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full h-12 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 font-bold transition-colors"
-                    onClick={() => setDeleteConfirmId(null)}
-                    disabled={isDeleting}
-                  >
-                    Not now
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
         )}
       </AnimatePresence>
 

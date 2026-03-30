@@ -88,3 +88,35 @@ export async function GET() {
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }
 }
+
+export async function DELETE() {
+  const session = await getSession("customer");
+  if (!session || session.user.role !== "customer") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await dbConnect();
+    const mongoose = (await import("mongoose")).default;
+    
+    // Hide all orders for this customer at once
+    await mongoose.connection.collection("orders").updateMany(
+      { 
+        $or: [
+          { customerId: new mongoose.Types.ObjectId(session.user.id) },
+          { customerId: session.user.id }
+        ]
+      },
+      { $set: { hiddenFromCustomer: true } }
+    );
+
+    return NextResponse.json({ message: "History cleared successfully" }, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0'
+      }
+    });
+  } catch (error) {
+    console.error("Error clearing customer history:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
