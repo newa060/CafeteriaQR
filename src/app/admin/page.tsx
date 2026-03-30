@@ -445,49 +445,79 @@ export default function AdminDashboard() {
                 </div>
 
                 <Card className="bg-[#111111] border-white/5 shadow-2xl">
-                  <div className="p-6 md:p-8 border-b border-white/5">
+                  <div className="p-5 md:p-8 border-b border-white/5">
                     <h3 className="text-xl md:text-2xl font-black text-white">What to Cook Now</h3>
-                    <p className="text-sm md:text-base text-gray-500 mt-1">Combined totals of all items currently ordered by students.</p>
+                    <p className="text-sm text-gray-500 mt-1">Tap + or − to set how many you've cooked, then press Done.</p>
                   </div>
-                  <CardContent className="p-4 md:p-6 space-y-6">
-                    {Object.entries(bulkBreakdown).map(([name, data]) => (
-                      <div key={name} className="flex flex-col bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
-                        <div className="flex justify-between items-center p-4 sm:p-5 md:p-7 bg-white/5 border-b border-white/5">
-                          <div className="space-y-1">
-                            <p className="text-[8px] sm:text-[10px] font-black text-primary uppercase tracking-[0.2em]">Item To Prep</p>
-                            <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-white tracking-tight">{name}</h3>
+                  <CardContent className="p-3 md:p-6 space-y-4">
+                    {Object.entries(bulkBreakdown).map(([name, data]) => {
+                      const currentQty = parseInt(bulkReadyQtys[name] || "0");
+                      return (
+                        <div key={name} className="bg-zinc-900 border border-white/5 rounded-2xl overflow-hidden">
+                          {/* Item Header */}
+                          <div className="flex items-center justify-between px-4 py-3 bg-white/5">
+                            <div>
+                              <p className="text-[9px] font-black text-primary uppercase tracking-widest">To Cook</p>
+                              <h3 className="text-lg font-black text-white leading-tight">{name}</h3>
+                            </div>
+                            <div className="bg-primary/20 border border-primary/30 px-3 py-1 rounded-xl">
+                              <span className="text-3xl font-black text-primary italic">{data.total}x</span>
+                            </div>
                           </div>
-                          <div className="bg-primary/20 border border-primary/30 px-3 sm:px-5 py-1 sm:py-2 rounded-xl sm:rounded-2xl">
-                            <span className="text-2xl sm:text-4xl md:text-5xl font-black text-primary italic">{String(data.total)}x</span>
+
+                          {/* Stepper + Action */}
+                          <div className="p-4 space-y-3">
+                            {/* Label */}
+                            <p className="text-xs text-gray-400 font-bold text-center uppercase tracking-wider">How many did you cook?</p>
+
+                            {/* Stepper Controls */}
+                            <div className="flex items-center justify-center gap-4">
+                              <button
+                                className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white text-3xl font-black border border-white/10"
+                                onClick={() => setBulkReadyQtys(prev => ({
+                                  ...prev,
+                                  [name]: String(Math.max(0, (parseInt(prev[name] || "0") - 1)))
+                                }))}
+                              >
+                                −
+                              </button>
+                              <div className="flex flex-col items-center">
+                                <span className="text-5xl font-black text-white w-20 text-center tabular-nums">
+                                  {currentQty}
+                                </span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                                  of {data.total} total
+                                </span>
+                              </div>
+                              <button
+                                className="w-14 h-14 rounded-2xl bg-primary/20 hover:bg-primary/30 active:scale-95 transition-all flex items-center justify-center text-primary text-3xl font-black border border-primary/30"
+                                onClick={() => setBulkReadyQtys(prev => ({
+                                  ...prev,
+                                  [name]: String(Math.min(data.total, (parseInt(prev[name] || "0") + 1)))
+                                }))}
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            {/* Done Button */}
+                            <Button 
+                              className="w-full h-14 bg-green-600 hover:bg-green-500 active:scale-[0.98] text-white text-base font-black rounded-xl shadow-lg shadow-green-900/40 gap-2 transition-all"
+                              onClick={() => handleBulkReady(name, currentQty)}
+                              disabled={currentQty <= 0 || isRefreshing}
+                            >
+                              {isRefreshing 
+                                ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+                                : <><CheckCircle2 className="w-5 h-5" /> Done Cooking {currentQty > 0 ? `(${currentQty})` : ""}</>
+                              }
+                            </Button>
                           </div>
                         </div>
-                        
-                        <div className="p-4 sm:p-6 bg-black/40 flex flex-col sm:flex-row items-center gap-4 border-t border-white/5">
-                          <div className="relative w-full sm:w-32">
-                            <Input
-                              type="number"
-                              min="1"
-                              max={data.total}
-                              placeholder="Qty"
-                              value={bulkReadyQtys[name] || ""}
-                              onChange={(e) => setBulkReadyQtys(prev => ({ ...prev, [name]: e.target.value }))}
-                              className="h-12 bg-white/5 border-white/10 rounded-xl text-center text-xl font-black placeholder:text-gray-700"
-                            />
-                          </div>
-                          <Button 
-                            className="w-full sm:flex-1 h-12 bg-green-600 hover:bg-green-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-green-600/20 gap-2"
-                            onClick={() => handleBulkReady(name, parseInt(bulkReadyQtys[name] || "0"))}
-                            disabled={!bulkReadyQtys[name] || parseInt(bulkReadyQtys[name]) <= 0 || isRefreshing}
-                          >
-                            {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                            <span>Mark Quantity Ready</span>
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {Object.keys(bulkBreakdown).length === 0 && (
                       <div className="py-10 text-center text-gray-500 font-bold italic opacity-50">
-                        No items to cook right now.
+                        No items to cook right now. 🎉
                       </div>
                     )}
                   </CardContent>
