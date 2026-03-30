@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useAuth } from "@/context/AuthContext";
+import { LogoutConfirmModal } from "@/components/LogoutConfirmModal";
 
 export default function CustomerLandingPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function CustomerLandingPage() {
   const [canteenCode, setCanteenCode] = useState("");
   const [error, setError] = useState("");
   const { logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -106,7 +108,7 @@ export default function CustomerLandingPage() {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={logout} 
+          onClick={() => setShowLogoutConfirm(true)} 
           className="text-gray-500 hover:text-white"
         >
           <LogOut className="w-5 h-5" />
@@ -195,6 +197,12 @@ export default function CustomerLandingPage() {
           </p>
         </div>
       </motion.div>
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal 
+        isOpen={showLogoutConfirm} 
+        onClose={() => setShowLogoutConfirm(false)} 
+        onConfirm={logout} 
+      />
     </div>
   );
 }

@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/Badge";
 import { useAuth } from "@/context/AuthContext";
 import { useNotification } from "@/context/NotificationContext";
 import { NotificationSheet } from "@/components/NotificationSheet";
+import { LogoutConfirmModal } from "@/components/LogoutConfirmModal";
 
 interface OrderItem {
   name: string;
@@ -63,6 +64,7 @@ export default function CustomerProfilePage() {
   const { unreadCount, markAllAsRead } = useNotification();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -187,7 +189,7 @@ export default function CustomerProfilePage() {
               )}
             </button>
           </div>
-          <Button variant="ghost" size="icon" onClick={logout} className="text-red-500 hover:bg-red-500/10">
+          <Button variant="ghost" size="icon" onClick={() => setShowLogoutConfirm(true)} className="text-red-500 hover:bg-red-500/10">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
@@ -578,6 +580,12 @@ export default function CustomerProfilePage() {
         <div className="h-px w-24 bg-white/10 mb-4" />
         <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
       </div>
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal 
+        isOpen={showLogoutConfirm} 
+        onClose={() => setShowLogoutConfirm(false)} 
+        onConfirm={logout} 
+      />
     </div>
   );
 }
