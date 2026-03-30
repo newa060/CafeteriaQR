@@ -118,9 +118,10 @@ export default function CustomerMenuPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden max-w-lg mx-auto bg-background text-white shadow-2xl">
-      {/* Header - Fixed At Top */}
-      <div className="flex-none">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-3.5 sm:p-4 flex items-center justify-between">
+      {/* Main Scrollable Content (Header + Menu) */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
+        {/* Header - Now inside scrollable area */}
+        <header className="bg-background/80 backdrop-blur-xl border-b border-white/5 p-3.5 sm:p-4 flex items-center justify-between">
         <h1 className="text-lg sm:text-xl font-bold tracking-tight">Canteen <span className="text-primary">Menu</span></h1>
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -144,10 +145,6 @@ export default function CustomerMenuPage() {
           </button>
         </div>
       </header>
-      </div>
-
-      {/* Main Scrollable Content */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
 
       <NotificationSheet 
         isOpen={isNotificationsOpen} 
