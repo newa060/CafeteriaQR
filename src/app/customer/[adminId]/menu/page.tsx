@@ -156,7 +156,7 @@ export default function CustomerMenuPage() {
 
 
       {/* Sticky Banner & Categories */}
-      <div className="sticky top-[64px] sm:top-[72px] z-40 bg-background/95 backdrop-blur-md border-b border-white/5 shadow-xl">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-white/5 shadow-xl">
         {/* Hero / Info */}
         <div className="p-4 pt-6 text-center sm:text-left">
           <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-1">{cafeteria?.name || "Cafeteria"}</h2>
