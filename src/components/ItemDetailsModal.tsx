@@ -65,24 +65,23 @@ export const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({
                     <ShoppingCart className="w-16 h-16 text-white/5" />
                   </div>
                 )}
-                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent pointer-events-none" />
+
                 {/* Floating Action Buttons */}
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors z-10"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
-                <div className="absolute top-4 left-4 flex gap-2">
+                <div className="absolute top-4 left-4 flex gap-2 z-10">
                   <div className="bg-primary/20 backdrop-blur-md border border-primary/30 px-3 py-1 rounded-full flex items-center gap-1.5">
                     <Star className="w-3.5 h-3.5 text-primary fill-primary" />
                     <span className="text-[10px] font-black text-white uppercase tracking-widest">Bestseller</span>
                   </div>
                 </div>
-                
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
               </div>
 
               {/* Content */}
