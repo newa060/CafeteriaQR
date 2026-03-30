@@ -42,35 +42,29 @@ export async function POST(req: Request) {
       if (remainingToReady <= 0) break;
 
       let orderModified = false;
-      // Use map to ensure we replace the subdocuments correctly in the array
-      const updatedItems = order.items.map((item: any) => {
+
+      // Mutate items in-place to satisfy Mongoose's DocumentArray type
+      order.items.forEach((item: any, idx: number) => {
         if (item.name.trim().toLowerCase() === itemName.trim().toLowerCase()) {
           const cooked = item.cookedQuantity || 0;
           const needed = item.quantity - cooked;
-          
-          if (needed > 0) {
+
+          if (needed > 0 && remainingToReady > 0) {
             const add = Math.min(needed, remainingToReady);
-            item.cookedQuantity = cooked + add;
+            order.items[idx].cookedQuantity = cooked + add;
             remainingToReady -= add;
             unitsUpdated += add;
             orderModified = true;
           }
         }
-        return item;
       });
 
       if (orderModified) {
-        order.items = updatedItems;
         // Check if the entire order is now finished
         const isFinished = order.items.every((i: any) => (i.cookedQuantity || 0) >= i.quantity);
-        if (isFinished) {
-          order.status = "ready";
-        } else {
-          // Explicitly set to preparing if it was accepted but now partially cooked
-          order.status = "preparing"; 
-        }
-        
-        // Use markModified to be 100% sure Mongoose sees the array change
+        order.status = isFinished ? "ready" : "preparing";
+
+        // markModified ensures Mongoose detects the subdocument changes
         order.markModified('items');
         await order.save();
       }
