@@ -194,7 +194,7 @@ export default function MenuManagementPage() {
   const uniqueCategories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
 
   return (
-    <div className="space-y-8 max-w-7xl pt-4 lg:pt-0">
+    <div className="space-y-8 max-w-7xl lg:pt-0">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">Menu Management</h1>
