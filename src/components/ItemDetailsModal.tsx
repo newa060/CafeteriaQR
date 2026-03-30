@@ -102,16 +102,7 @@ export const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({
                     {item.description || "No description provided for this item."}
                   </p>
 
-                  <div className="flex flex-wrap gap-4 pt-2">
-                    <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-4 py-2 rounded-2xl">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">10-15 Min Prep</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-4 py-2 rounded-2xl">
-                      <Flame className="w-4 h-4 text-orange-500" />
-                      <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Always Fresh</span>
-                    </div>
-                  </div>
+
                 </div>
 
                 {/* Interaction Footer */}
