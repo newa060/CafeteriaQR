@@ -195,19 +195,20 @@ export default function CustomerMenuPage() {
           <p className="text-gray-500 font-medium">Delicious meals pre-prepared for you.</p>
         </motion.div>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input 
-            placeholder="Search for dishes..." 
-            className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {/* Sticky Search & Category Container */}
+        <div className="sticky top-[72px] z-50 -mx-4 px-4 bg-background/95 backdrop-blur-md border-b border-white/5 space-y-4 py-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input 
+              placeholder="Search for dishes..." 
+              className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-        {/* Category Stick Bag */}
-        <div className="sticky top-[72px] z-50 -mx-4 px-4 py-3 bg-background/95 backdrop-blur-md border-b border-white/5 mb-6">
+          {/* Category Bar */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {categories.map((cat) => (
               <Button
@@ -328,7 +329,7 @@ export default function CustomerMenuPage() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-6 left-0 right-0 px-4 flex justify-center z-50"
+            className="fixed bottom-20 left-0 right-0 px-4 flex justify-center z-50"
           >
             <Button 
               className="w-full max-w-md h-14 rounded-2xl shadow-2xl shadow-primary/40 flex justify-between items-center px-6 bg-primary text-white text-lg font-bold"
@@ -350,9 +351,9 @@ export default function CustomerMenuPage() {
         )}
       </AnimatePresence>
 
-      {/* Simple Footer */}
-      <footer className="p-8 mt-12 border-t border-white/5 opacity-20 text-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em]">MenuQR Powered</p>
+      {/* Fixed Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t border-white/5 z-[45] text-center">
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">MenuQR Powered</p>
       </footer>
     </div>
   );
