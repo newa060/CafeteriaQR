@@ -53,6 +53,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const [bulkReadyQtys, setBulkReadyQtys] = useState<{ [key: string]: string }>({});
   const { showNotification } = useNotification();
   const notifiedOrderIds = useRef<Set<string>>(new Set());
@@ -151,8 +152,6 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteOrder = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this order from history?")) return;
-    
     try {
       const res = await fetch(`/api/admin/orders?id=${id}`, {
         method: "DELETE",
@@ -365,7 +364,7 @@ export default function AdminDashboard() {
                             <Button 
                               variant="outline"
                               className="w-full h-10 border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest gap-2"
-                              onClick={() => handleDeleteOrder(order._id)}
+                              onClick={() => setOrderToDelete(order._id)}
                             >
                               <Trash2 className="w-3 h-3" />
                               Delete Record
@@ -522,6 +521,60 @@ export default function AdminDashboard() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Record Confirmation Modal */}
+      <AnimatePresence>
+        {orderToDelete && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setOrderToDelete(null)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center overflow-hidden"
+            >
+              {/* Background gradient hint */}
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-red-500/20 blur-[60px] rounded-full pointer-events-none" />
+              
+              <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6 mt-2 relative z-10 border border-red-500/20 shadow-inner">
+                <Trash2 className="w-8 h-8 text-red-500 drop-shadow-lg" />
+              </div>
+              
+              <div className="relative z-10 mb-8">
+                <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Delete Record?</h3>
+                <p className="text-sm text-gray-400 leading-relaxed max-w-[280px]">
+                  This will permanently delete this order from the system history. This action cannot be undone. Are you sure?
+                </p>
+              </div>
+
+              <div className="flex gap-4 w-full relative z-10">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold"
+                  onClick={() => setOrderToDelete(null)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 h-14 rounded-2xl bg-red-600 hover:bg-red-500 border-none text-white font-black shadow-xl shadow-red-500/30"
+                  onClick={() => {
+                    handleDeleteOrder(orderToDelete);
+                    setOrderToDelete(null);
+                  }}
+                >
+                  Yes, Delete
+                </Button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
