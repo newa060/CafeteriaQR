@@ -128,13 +128,7 @@ export default function AdminDashboard() {
       });
 
       if (res.ok) {
-        const data = await res.json();
         setBulkReadyQtys(prev => ({ ...prev, [itemName]: "" }));
-        showNotification({
-          title: "Kitchen Updated 🍱",
-          message: `Successfully marked ${data.unitsUpdated} units of ${itemName} as prepared.`,
-          type: "success"
-        });
         fetchOrders();
       } else {
         const errorData = await res.json();
