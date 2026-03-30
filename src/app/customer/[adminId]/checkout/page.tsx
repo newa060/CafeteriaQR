@@ -254,7 +254,6 @@ export default function CheckoutPage() {
             <Clock className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-bold">Time-slot</h2>
           </div>
-          <p className="text-xs text-gray-500">Choose a time-slot 15 minute</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {cafeteria?.timeSlots.map(slot => (
               <button

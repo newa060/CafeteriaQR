@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Settings as SettingsIcon, 
   CreditCard, 
@@ -13,7 +13,8 @@ import {
   Check, 
   AlertCircle,
   Coffee,
-  Info
+  Info,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -45,6 +46,7 @@ export default function AdminSettingsPage() {
   const [newSlotHour, setNewSlotHour] = useState("09");
   const [newSlotMinute, setNewSlotMinute] = useState("00");
   const [newSlotPeriod, setNewSlotPeriod] = useState("AM");
+  const [isQRDeleteModalOpen, setIsQRDeleteModalOpen] = useState(false);
   
   // Custom uploader states
   const qrInputRef = useRef<HTMLInputElement>(null);
@@ -246,8 +248,8 @@ export default function AdminSettingsPage() {
                     <img src={paymentQRUrl} alt="Payment QR Preview" className="w-44 h-44 object-contain rounded-2xl bg-white p-2 shadow-2xl ring-4 ring-primary/20" />
                     <button 
                       type="button" 
-                      onClick={() => setPaymentQRUrl("")}
-                      className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform"
+                      onClick={() => setIsQRDeleteModalOpen(true)}
+                      className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform z-10"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -358,6 +360,68 @@ export default function AdminSettingsPage() {
           </Button>
         </div>
       </form>
+      
+      {/* QR Delete Confirmation Modal */}
+      <AnimatePresence>
+        {isQRDeleteModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-lg"
+              onClick={() => setIsQRDeleteModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1, 
+                y: 0,
+                transition: { type: "spring", damping: 25, stiffness: 400 }
+              }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-sm bg-[#0d0d0d] border border-white/10 rounded-[2rem] p-8 shadow-2xl overflow-hidden"
+            >
+              {/* Decoration */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
+              
+              <div className="text-center space-y-6">
+                <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-red-500/5">
+                  <Trash2 className="w-8 h-8 text-red-500" />
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">Remove QR Code?</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed px-4">
+                    Are you sure you want to delete your payment QR image? Customers won't see it during checkout.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3 pt-2">
+                  <Button 
+                    variant="default"
+                    className="w-full h-12 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-red-600/20 transition-all active:scale-95"
+                    onClick={() => {
+                      setPaymentQRUrl("");
+                      setIsQRDeleteModalOpen(false);
+                    }}
+                  >
+                    Yes, Delete QR
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    className="w-full h-12 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 font-bold uppercase tracking-widest text-[10px] transition-colors"
+                    onClick={() => setIsQRDeleteModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
