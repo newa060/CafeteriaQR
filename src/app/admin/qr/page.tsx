@@ -60,7 +60,7 @@ export default function QRGenerationPage() {
   };
 
   return (
-    <div className="space-y-10 max-w-4xl mx-auto pb-20">
+    <div className="space-y-10 max-w-4xl mx-auto pb-20 pt-4 lg:pt-0">
       <div className="text-center md:text-left px-2">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">Cafeteria QR Code</h1>
         <p className="text-[11px] sm:text-base text-gray-500 font-medium mt-2">Generate and download your unique QR code for scan-to-order.</p>
