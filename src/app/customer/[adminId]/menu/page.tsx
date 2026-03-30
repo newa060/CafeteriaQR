@@ -117,8 +117,9 @@ export default function CustomerMenuPage() {
   }
 
   return (
-    <div className="pb-24 max-w-lg mx-auto bg-background text-white min-h-screen">
-      {/* Header */}
+    <div className="h-screen flex flex-col overflow-hidden max-w-lg mx-auto bg-background text-white shadow-2xl">
+      {/* Header - Fixed At Top */}
+      <div className="flex-none">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-3.5 sm:p-4 flex items-center justify-between">
         <h1 className="text-lg sm:text-xl font-bold tracking-tight">Canteen <span className="text-primary">Menu</span></h1>
         <div className="flex items-center gap-2">
@@ -143,6 +144,10 @@ export default function CustomerMenuPage() {
           </button>
         </div>
       </header>
+      </div>
+
+      {/* Main Scrollable Content */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
 
       <NotificationSheet 
         isOpen={isNotificationsOpen} 
@@ -302,20 +307,20 @@ export default function CustomerMenuPage() {
           </div>
         )}
       </div>
+      </div>
 
-      {/* Sticky Cart Button */}
+      {/* Sticky Cart Button - Positioned over the fixed footer */}
       <AnimatePresence>
         {cartCount > 0 && !(cafeteria && !cafeteria.isActive) && !isNotificationsOpen && (
           <motion.div 
             initial={{ y: 100 }}
-            animate={{ y: 0 }}
+            animate={{ y: -64 }}
             exit={{ y: 100 }}
-            className="fixed bottom-6 left-0 right-0 px-4 flex justify-center z-50 pointer-events-none"
+            className="fixed bottom-0 left-0 right-0 px-4 flex justify-center z-50 pointer-events-none"
           >
             <Button 
               className="w-full max-w-sm h-14 rounded-2xl shadow-2xl shadow-primary/40 flex justify-between items-center px-6 pointer-events-auto bg-primary text-white text-lg font-bold"
               onClick={() => {
-                // Save cart to local storage/state and go to checkout
                 localStorage.setItem("cart", JSON.stringify(cart));
                 router.push(`/customer/${adminId}/checkout`);
               }}
@@ -334,9 +339,12 @@ export default function CustomerMenuPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="py-12 flex flex-col items-center justify-center opacity-30">
-        <div className="h-px w-24 bg-white/10 mb-4" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
+
+      {/* Fixed Footer At Bottom */}
+      <div className="flex-none p-6 bg-zinc-950 border-t border-white/5 relative z-20">
+        <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">
+          Powered by MenuQR
+        </p>
       </div>
     </div>
   );
