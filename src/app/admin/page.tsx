@@ -16,7 +16,8 @@ import {
   ArrowRight,
   Eye,
   X,
-  Bell
+  Bell,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -26,8 +27,12 @@ import { useNotification } from "@/context/NotificationContext";
 import { useRef } from "react";
 
 interface OrderItem {
+  _id?: string;
+  menuItemId: string;
   name: string;
   quantity: number;
+  price: number;
+  cookedQuantity?: number;
 }
 
 interface Order {
@@ -48,21 +53,18 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
-  const [rejectConfirmId, setRejectConfirmId] = useState<string | null>(null);
+  const [bulkReadyQtys, setBulkReadyQtys] = useState<{ [key: string]: string }>({});
   const { showNotification } = useNotification();
   const notifiedOrderIds = useRef<Set<string>>(new Set());
   const isFirstLoad = useRef(true);
 
   const fetchOrders = async () => {
-    setIsRefreshing(true);
     try {
-      const res = await fetch("/api/admin/orders");
+      const res = await fetch(`/api/admin/orders?t=${Date.now()}`, { cache: "no-store" });
       if (res.ok) {
         const data: Order[] = await res.json();
         
-        // Handle notifications for new pending orders
         if (isFirstLoad.current) {
-          // On first load, just record existing orders without notifying
           const ids = new Set(data.map(o => o._id));
           notifiedOrderIds.current = ids;
           isFirstLoad.current = false;
@@ -92,7 +94,6 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchOrders();
-    // Refresh for "Real-time" updates every 8 seconds
     const interval = setInterval(fetchOrders, 8000);
     return () => clearInterval(interval);
   }, []);
@@ -105,29 +106,95 @@ export default function AdminDashboard() {
         body: JSON.stringify({ id, status }),
       });
       if (res.ok) {
-        fetchOrders(); // Refresh after update
+        fetchOrders();
+        return true;
       }
+      return false;
     } catch (err) {
       console.error("Failed to update status:", err);
+      return false;
     }
   };
 
-  // 1. Kitchen View (Bulk Breakdown) - ONLY shows orders that have been ACCEPTED by admin
+  const handleBulkReady = async (itemName: string, count: number) => {
+    if (count <= 0) return;
+    
+    setIsRefreshing(true);
+    try {
+      const res = await fetch("/api/admin/orders/bulk-ready", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemName, quantity: count }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setBulkReadyQtys(prev => ({ ...prev, [itemName]: "" }));
+        showNotification({
+          title: "Kitchen Updated 🍱",
+          message: `Successfully marked ${data.unitsUpdated} units of ${itemName} as prepared.`,
+          type: "success"
+        });
+        fetchOrders();
+      } else {
+        const errorData = await res.json();
+        showNotification({
+          title: "Update Failed",
+          message: errorData.error || "Could not update kitchen quantity.",
+          type: "warning"
+        });
+      }
+    } catch (err) {
+      console.error("Bulk ready error:", err);
+      showNotification({
+        title: "Connection Error",
+        message: "Failed to connect to the server.",
+        type: "warning"
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleDeleteOrder = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this order from history?")) return;
+    
+    try {
+      const res = await fetch(`/api/admin/orders?id=${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        showNotification({
+          title: "Order Deleted",
+          message: "The order has been removed from your history.",
+          type: "success"
+        });
+        fetchOrders();
+      }
+    } catch (err) {
+      console.error("Failed to delete order:", err);
+    }
+  };
+
+  // Kitchen View — only accepted/preparing orders, subtracting already-cooked quantities
   const bulkBreakdown = orders
     .filter(o => o.status === "accepted" || o.status === "preparing")
     .reduce((acc: { [key: string]: { total: number; orders: any[] } }, order) => {
       order.items.forEach(item => {
-        if (!acc[item.name]) {
-          acc[item.name] = { total: 0, orders: [] };
+        const remaining = item.quantity - (item.cookedQuantity || 0);
+        if (remaining > 0) {
+          if (!acc[item.name]) {
+            acc[item.name] = { total: 0, orders: [] };
+          }
+          acc[item.name].total += remaining;
+          acc[item.name].orders.push({
+            orderId: order._id,
+            customerName: order.customerName,
+            quantity: remaining,
+            timeSlot: order.timeSlot,
+            status: order.status
+          });
         }
-        acc[item.name].total += item.quantity;
-        acc[item.name].orders.push({
-          orderId: order._id,
-          customerName: order.customerName,
-          quantity: item.quantity,
-          timeSlot: order.timeSlot,
-          status: order.status
-        });
       });
       return acc;
     }, {});
@@ -136,12 +203,15 @@ export default function AdminDashboard() {
     .filter(o => o.status === "accepted" || o.status === "preparing")
     .reduce((acc: { [key: string]: number }, order) => {
       order.items.forEach(item => {
-        acc[item.name] = (acc[item.name] || 0) + item.quantity;
+        const remaining = item.quantity - (item.cookedQuantity || 0);
+        if (remaining > 0) {
+          acc[item.name] = (acc[item.name] || 0) + remaining;
+        }
       });
       return acc;
     }, {});
 
-  const totalItemCount = Object.values(bulkTotals).reduce((a: number, b: number) => a + b, 0);
+  const totalItemCount = (Object.values(bulkTotals) as number[]).reduce((a: number, b: number) => a + b, 0);
 
   if (loading) {
     return (
@@ -179,9 +249,9 @@ export default function AdminDashboard() {
                 }}
               >
                 <Bell className="w-3 h-3 text-primary" />
-                <span>Test</span>
               </Button>
             </div>
+
             <p className="text-[10px] sm:text-sm text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Manage live orders and see what to cook.</p>
           </div>
           
@@ -201,39 +271,48 @@ export default function AdminDashboard() {
               <Bell className="w-3.5 h-3.5 text-primary" />
               <span>Test Audio</span>
             </Button>
-            
-            <div className="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-xl sm:rounded-2xl border border-white/5 shadow-2xl w-full md:w-auto overflow-x-auto scrollbar-hide no-scrollbar min-w-0">
+
+            <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide no-scrollbar w-full md:w-auto">
               <button 
                 onClick={() => setActiveTab("individual")}
-                className={`flex-1 md:flex-none px-4 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black transition-all whitespace-nowrap ${
-                  activeTab === "individual" 
-                    ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                    : "text-gray-500 hover:text-white"
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  activeTab === "individual" ? "bg-primary text-black shadow-lg shadow-primary/20 scale-105" : "bg-white/5 text-gray-500 hover:bg-white/10"
                 }`}
               >
+                <ArrowRight className="w-3.5 h-3.5" />
                 Individual
               </button>
               <button 
                 onClick={() => setActiveTab("bulk")}
-                className={`flex-1 md:flex-none px-4 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black transition-all whitespace-nowrap ${
-                  activeTab === "bulk" 
-                    ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                    : "text-gray-500 hover:text-white"
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  activeTab === "bulk" ? "bg-primary text-black shadow-lg shadow-primary/20 scale-105" : "bg-white/5 text-gray-500 hover:bg-white/10"
                 }`}
               >
-                Kitchen
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Kitchen View
               </button>
               <button 
                 onClick={() => setActiveTab("history")}
-                className={`flex-1 md:flex-none px-4 sm:px-5 py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black transition-all whitespace-nowrap ${
-                  activeTab === "history" 
-                    ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                    : "text-gray-500 hover:text-white"
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  activeTab === "history" ? "bg-primary text-black shadow-lg shadow-primary/20 scale-105" : "bg-white/5 text-gray-500 hover:bg-white/10"
                 }`}
               >
+                <ListTodo className="w-3.5 h-3.5" />
                 History
               </button>
             </div>
+          </div>
+
+          <div className="hidden md:flex gap-4">
+            <Button 
+              variant="outline"
+              className="h-14 px-6 border-white/5 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center gap-3 transition-all"
+              onClick={fetchOrders}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+              <span className="font-bold text-white uppercase tracking-widest text-sm">Force Refresh</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -254,7 +333,9 @@ export default function AdminDashboard() {
               >
                 {orders
                   .filter(o => 
-                    activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
+                    activeTab === "individual" 
+                      ? o.status === "pending" 
+                      : (o.status === "accepted" || o.status === "preparing" || o.status === "ready" || o.status === "cancelled")
                   ).map((order) => (
                   <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
                     <CardContent className="p-5 sm:p-7 space-y-4 sm:space-y-6">
@@ -265,11 +346,10 @@ export default function AdminDashboard() {
                         </div>
                         <Badge variant={
                           order.status === "pending" ? "warning" : 
-                          (order.status === "ready" || order.status === "accepted" || order.status === "preparing") ? "default" : "destructive"
+                          order.status === "cancelled" ? "destructive" : "default"
                         } className="px-2 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs">
-                          {order.status === "ready" ? "Ready" : 
-                           (order.status === "accepted" || order.status === "preparing") ? "Accepted" : 
-                           order.status === "pending" ? "Pending" : "Rejected"}
+                          {order.status === "pending" ? "Pending" : 
+                           order.status === "cancelled" ? "Rejected" : "Accepted"}
                         </Badge>
                       </div>
 
@@ -310,28 +390,23 @@ export default function AdminDashboard() {
                             )}
                             <div className="flex gap-2 w-full">
                               <Button 
-                                variant="outline"
-                                className="w-1/3 h-11 sm:h-14 text-xs sm:text-sm font-black border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl sm:rounded-2xl transition-all"
-                                onClick={() => setRejectConfirmId(order._id)}
-                              >
-                                Reject
-                              </Button>
-                              <Button 
-                                className="w-2/3 h-11 sm:h-14 text-base sm:text-xl font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/30"
+                                className="w-full h-11 sm:h-14 text-base sm:text-xl font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/30"
                                 onClick={() => updateOrderStatus(order._id, "accepted")}
                               >
-                                Accept
+                                Accept Order
                               </Button>
                             </div>
                           </div>
                         ) : (
-                          <div className="py-2 text-center">
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Final Status</p>
-                            <p className={`text-xl font-black mt-1 ${
-                              order.status === 'ready' ? 'text-green-500' : 'text-red-500'
-                            }`}>
-                              {order.status === 'ready' ? 'ORDER READY' : 'ORDER REJECTED'}
-                            </p>
+                          <div className="pt-4 border-t border-white/5">
+                            <Button 
+                              variant="outline"
+                              className="w-full h-10 border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest gap-2"
+                              onClick={() => handleDeleteOrder(order._id)}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              Delete Record
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -340,7 +415,7 @@ export default function AdminDashboard() {
                 ))}
 
                 {orders.filter(o => 
-                  activeTab === "individual" ? o.status === "pending" : o.status !== "pending"
+                  activeTab === "individual" ? o.status === "pending" : (o.status !== "pending")
                 ).length === 0 && (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-700">
                     <Pizza className="w-16 h-16 mb-4 opacity-10" />
@@ -358,7 +433,6 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, x: -20 }}
                 className="flex flex-col gap-6"
               >
-                {/* Top Metrics */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <Card className="bg-primary/10 border-primary/20 text-center py-4 sm:py-6 md:py-8">
                     <p className="text-[8px] sm:text-[10px] md:text-xs font-bold text-primary uppercase tracking-widest mb-1">Items to Cook</p>
@@ -370,7 +444,6 @@ export default function AdminDashboard() {
                   </Card>
                 </div>
 
-                {/* Detailed Bulk List */}
                 <Card className="bg-[#111111] border-white/5 shadow-2xl">
                   <div className="p-6 md:p-8 border-b border-white/5">
                     <h3 className="text-xl md:text-2xl font-black text-white">What to Cook Now</h3>
@@ -379,7 +452,6 @@ export default function AdminDashboard() {
                   <CardContent className="p-4 md:p-6 space-y-6">
                     {Object.entries(bulkBreakdown).map(([name, data]) => (
                       <div key={name} className="flex flex-col bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
-                        {/* Header: Item Name and Total */}
                         <div className="flex justify-between items-center p-4 sm:p-5 md:p-7 bg-white/5 border-b border-white/5">
                           <div className="space-y-1">
                             <p className="text-[8px] sm:text-[10px] font-black text-primary uppercase tracking-[0.2em]">Item To Prep</p>
@@ -390,29 +462,26 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         
-                        {/* Orders List */}
-                        <div className="p-4 md:p-6 bg-black/40">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                            {data.orders.map((subOrder: any, idx: number) => (
-                              <div key={idx} className="flex items-center justify-between bg-zinc-800/50 rounded-2xl p-4 border border-white/5 hover:bg-zinc-800 transition-colors">
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-primary" />
-                                    <span className="text-sm md:text-base font-black text-white">{subOrder.customerName}</span>
-                                  </div>
-                                  <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest pl-4">
-                                    Qty: {subOrder.quantity} • {subOrder.timeSlot}
-                                  </p>
-                                </div>
-                                <Button 
-                                  className="h-10 md:h-12 px-6 flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-green-600/20 whitespace-nowrap"
-                                  onClick={() => updateOrderStatus(subOrder.orderId, "ready")}
-                                >
-                                  Ready
-                                </Button>
-                              </div>
-                            ))}
+                        <div className="p-4 sm:p-6 bg-black/40 flex flex-col sm:flex-row items-center gap-4 border-t border-white/5">
+                          <div className="relative w-full sm:w-32">
+                            <Input
+                              type="number"
+                              min="1"
+                              max={data.total}
+                              placeholder="Qty"
+                              value={bulkReadyQtys[name] || ""}
+                              onChange={(e) => setBulkReadyQtys(prev => ({ ...prev, [name]: e.target.value }))}
+                              className="h-12 bg-white/5 border-white/10 rounded-xl text-center text-xl font-black placeholder:text-gray-700"
+                            />
                           </div>
+                          <Button 
+                            className="w-full sm:flex-1 h-12 bg-green-600 hover:bg-green-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-green-600/20 gap-2"
+                            onClick={() => handleBulkReady(name, parseInt(bulkReadyQtys[name] || "0"))}
+                            disabled={!bulkReadyQtys[name] || parseInt(bulkReadyQtys[name]) <= 0 || isRefreshing}
+                          >
+                            {isRefreshing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                            <span>Mark Quantity Ready</span>
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -428,7 +497,7 @@ export default function AdminDashboard() {
           </AnimatePresence>
         </div>
 
-        {/* Sidebar / Statistics Panel */}
+        {/* Sidebar — hide on Kitchen View */}
         {activeTab !== 'bulk' && (
           <div className="space-y-8">
             <Card className="bg-[#111111] border-white/5 shadow-2xl overflow-hidden rounded-2xl sm:rounded-3xl">
@@ -467,7 +536,6 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Screenshot Modal */}
       <AnimatePresence>
         {selectedScreenshot && (
           <motion.div
@@ -482,7 +550,6 @@ export default function AdminDashboard() {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="relative max-w-2xl w-full h-[85vh] bg-[#0a0a0a] rounded-3xl sm:rounded-[2.5rem] overflow-hidden border border-white/10 flex flex-col pt-2 shadow-2xl"
             >
-              {/* Modal Header */}
               <div className="p-4 sm:p-6 flex items-center justify-between border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -501,7 +568,6 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              {/* Image Container */}
               <div className="flex-1 overflow-auto p-8 flex items-center justify-center bg-black/40">
                 <img 
                   src={selectedScreenshot || ""} 
@@ -510,57 +576,10 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Modal Footer */}
               <div className="p-6 bg-white/5 flex flex-col items-center gap-2">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] italic">
                   Powered by MenuQR Verification
                 </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Reject Confirmation Modal */}
-      <AnimatePresence>
-        {rejectConfirmId && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="max-w-md w-full bg-[#111111] rounded-[2rem] overflow-hidden border border-red-500/20 shadow-2xl p-8 text-center"
-            >
-              <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Package className="w-10 h-10 text-red-500" />
-              </div>
-              <h3 className="text-2xl font-black text-white mb-2">Reject Order?</h3>
-              <p className="text-gray-400 mb-8">
-                Are you sure you want to reject this order? The student will be notified and this action cannot be undone.
-              </p>
-              
-              <div className="flex gap-4">
-                <Button 
-                  variant="outline"
-                  className="flex-1 h-14 rounded-2xl border-white/10 hover:bg-white/5"
-                  onClick={() => setRejectConfirmId(null)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  className="flex-1 h-14 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold tracking-wide"
-                  onClick={() => {
-                    updateOrderStatus(rejectConfirmId, "cancelled");
-                    setRejectConfirmId(null);
-                  }}
-                >
-                  Confirm Reject
-                </Button>
               </div>
             </motion.div>
           </motion.div>

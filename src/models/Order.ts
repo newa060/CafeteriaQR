@@ -18,6 +18,10 @@ const OrderItemSchema = new Schema({
     type: Number,
     required: true,
   },
+  cookedQuantity: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const OrderSchema = new Schema({
@@ -61,4 +65,10 @@ const OrderSchema = new Schema({
   },
 }, { timestamps: true });
 
-export default models.Order || model('Order', OrderSchema);
+// In development, Next.js hot-reloading can cause models to be re-compiled multiple times
+// with old schemas. We delete the existing model if it exists to force a refresh.
+if (models && models.Order) {
+  delete (models as any).Order;
+}
+
+export default model('Order', OrderSchema);

@@ -50,15 +50,19 @@ export async function PATCH(req: Request) {
 
   try {
     await dbConnect();
-    const { id, status } = await req.json();
+    const { id, status, items } = await req.json();
 
-    if (!id || !status) {
-      return NextResponse.json({ error: "ID and status are required" }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
+
+    const update: any = {};
+    if (status) update.status = status;
+    if (items) update.items = items;
 
     const updatedOrder = await Order.findOneAndUpdate(
       { _id: id, cafeteriaId },
-      { status },
+      { $set: update },
       { new: true }
     );
 
@@ -69,5 +73,35 @@ export async function PATCH(req: Request) {
     return NextResponse.json(updatedOrder);
   } catch (error) {
     return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  const cafeteriaId = await getAdminCafeteria();
+  if (!cafeteriaId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await dbConnect();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    const deletedOrder = await Order.findOneAndDelete({
+      _id: id,
+      cafeteriaId,
+    });
+
+    if (!deletedOrder) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Order deleted successfully" });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to delete order" }, { status: 500 });
   }
 }
