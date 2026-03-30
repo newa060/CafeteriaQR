@@ -160,7 +160,23 @@ export default function CheckoutPage() {
       setError("Please enter a valid time (HH:MM)");
       return;
     }
-    // Logic for 10-minute constraint is handled in the API, but let's check it briefly here too
+
+    // Safely calculate the slot time in the client's local timezone
+    const [h, m] = finalTimeSlot.split(":").map(Number);
+    const slotDate = new Date();
+    slotDate.setHours(h, m, 0, 0);
+
+    // If the selected slot hour is earlier than the current hour, 
+    // it implies an order for the next day.
+    if (slotDate.getTime() < Date.now()) {
+      slotDate.setDate(slotDate.getDate() + 1);
+    }
+
+    const diffInMs = slotDate.getTime() - Date.now();
+    if (diffInMs < 10 * 60 * 1000) {
+      setError("Orders must be placed at least 10 minutes before the selected slot");
+      return;
+    }
     
     setSubmitting(true);
     setError("");
@@ -176,6 +192,7 @@ export default function CheckoutPage() {
         })),
         totalAmount,
         timeSlot: finalTimeSlot,
+        slotTimestamp: slotDate.getTime(),
         paymentScreenshotUrl: screenshotUrl,
         paymentName: paymentName || user?.name
       };

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   try {
     await dbConnect();
-    const { cafeteriaId, items, totalAmount, timeSlot, paymentScreenshotUrl, paymentName } = await req.json();
+    const { cafeteriaId, items, totalAmount, timeSlot, slotTimestamp, paymentScreenshotUrl, paymentName } = await req.json();
 
     if (!cafeteriaId || !items || !totalAmount || !timeSlot) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -27,16 +27,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Cafeteria is currently closed and not accepting orders" }, { status: 400 });
     }
 
-    // Basic logic to check if order time is at least 10 minutes before slot
-    // For simplicity, we assume the timeSlot is in HH:mm format (e.g., "10:15")
-    const now = new Date();
-    const [hours, minutes] = timeSlot.split(":").map(Number);
-    const slotDate = new Date();
-    slotDate.setHours(hours, minutes, 0, 0);
-
-    const diffInMs = slotDate.getTime() - now.getTime();
-    if (diffInMs < 10 * 60 * 1000) {
-      return NextResponse.json({ error: "Orders must be placed at least 10 minutes before the selected slot" }, { status: 400 });
+    // Use absolute timestamp to fix Node server running in UTC (Vercel) vs Client timezone (Nepal) bug
+    if (slotTimestamp) {
+      const diffInMs = slotTimestamp - Date.now();
+      if (diffInMs < 10 * 60 * 1000) {
+        return NextResponse.json({ error: "Orders must be placed at least 10 minutes before the selected slot" }, { status: 400 });
+      }
     }
 
     const order = await Order.create({
