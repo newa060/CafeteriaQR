@@ -234,7 +234,7 @@ export default function CustomerMenuPage() {
         )}
 
         {/* Menu Items Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <AnimatePresence>
             {filteredItems.map((item) => (
               <motion.div
@@ -243,68 +243,71 @@ export default function CustomerMenuPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className={`group relative bg-card border border-white/5 rounded-[2rem] overflow-hidden hover:border-primary/30 transition-all ${
+                className={`group relative bg-card border border-white/5 rounded-2xl overflow-hidden hover:border-primary/30 transition-all flex h-32 ${
                   !item.isAvailable || !cafeteria?.isActive ? "grayscale opacity-60" : ""
                 }`}
                 onClick={() => cafeteria?.isActive && setSelectedItem(item)}
               >
-                {/* Image */}
-                <div className="aspect-[4/3] overflow-hidden relative">
+                {/* Content - Left Side */}
+                <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+                  <div className="space-y-0.5">
+                    <h3 className="font-bold text-base text-white leading-tight truncate">{item.name}</h3>
+                    <p className="text-gray-500 text-[10px] line-clamp-2 leading-tight">{item.description}</p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-auto">
+                    <p className="text-lg font-black text-primary">₹{item.price}</p>
+                    
+                    <div onClick={(e) => e.stopPropagation()}>
+                      {getItemQuantity(item._id) > 0 ? (
+                        <div className="flex items-center gap-2 bg-primary/10 rounded-xl p-0.5 border border-primary/20">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeFromCart(item._id)}
+                            className="h-7 w-7 text-primary hover:bg-primary/20 rounded-lg"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                          <span className="font-black text-primary text-xs w-4 text-center">{getItemQuantity(item._id)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => addToCart(item._id)}
+                            className="h-7 w-7 text-primary hover:bg-primary/20 rounded-lg"
+                            disabled={!item.isAvailable}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="h-8 px-3 rounded-xl font-black uppercase text-[10px] tracking-wider gap-1.5 shadow-lg shadow-primary/10"
+                          onClick={() => addToCart(item._id)}
+                          disabled={!item.isAvailable || !cafeteria?.isActive}
+                        >
+                          <Plus className="w-3 h-3" />
+                          Add
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Image - Right Side */}
+                <div className="w-32 h-full relative shrink-0">
                   <img 
                     src={item.imageUrl || "/placeholder.png"} 
                     alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {!item.isAvailable && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">Sold Out</span>
+                      <span className="bg-red-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Sold Out</span>
                     </div>
                   )}
-                </div>
-
-                {/* Content */}
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-lg text-white leading-tight">{item.name}</h3>
-                      <p className="text-gray-500 text-xs line-clamp-1">{item.description}</p>
-                    </div>
-                    <p className="text-xl font-black text-primary">₹{item.price}</p>
-                  </div>
-
-                  <div className="pt-2">
-                    {getItemQuantity(item._id) > 0 ? (
-                      <div className="flex items-center justify-between bg-primary/10 rounded-2xl p-1 border border-primary/20">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => { e.stopPropagation(); removeFromCart(item._id); }}
-                          className="h-10 w-10 text-primary hover:bg-primary/20 rounded-xl"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <span className="font-black text-primary">{getItemQuantity(item._id)}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => { e.stopPropagation(); addToCart(item._id); }}
-                          className="h-10 w-10 text-primary hover:bg-primary/20 rounded-xl"
-                          disabled={!item.isAvailable}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        className="w-full h-12 rounded-2xl font-black uppercase tracking-widest gap-2 shadow-lg shadow-primary/10"
-                        onClick={(e) => { e.stopPropagation(); addToCart(item._id); }}
-                        disabled={!item.isAvailable || !cafeteria?.isActive}
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add to Cart
-                      </Button>
-                    )}
-                  </div>
+                  {/* Selected count overlay if needed, but we have the button downstairs */}
                 </div>
               </motion.div>
             ))}
