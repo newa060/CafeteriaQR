@@ -410,12 +410,20 @@ export default function CheckoutPage() {
         </section>
 
         {/* Order Summary */}
-        <section className={`bg-white/5 rounded-2xl p-4 space-y-3 ${!cafeteria?.isActive ? "opacity-50" : ""}`}>
-          <div className="flex justify-between items-center text-sm text-gray-400">
-            <span>Subtotal</span>
-            <span>RS {totalAmount}</span>
+        <section className={`bg-white/5 rounded-2xl p-4 space-y-4 ${!cafeteria?.isActive ? "opacity-50" : ""}`}>
+          <div className="space-y-3 border-b border-white/5 pb-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Order Details</h3>
+            {cartItems.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-center text-sm text-gray-400">
+                <div className="flex flex-col">
+                  <span className="font-bold text-white max-w-[180px] sm:max-w-[220px] truncate">{item.name}</span>
+                  <span className="text-[10px] uppercase tracking-wider mt-0.5">RS {item.price} x {cart[item._id]}</span>
+                </div>
+                <span className="font-black text-white">RS {item.price * cart[item._id]}</span>
+              </div>
+            ))}
           </div>
-          <div className="flex justify-between items-center text-lg font-bold">
+          <div className="flex justify-between items-center text-lg font-black pt-1">
             <span>Total Amount</span>
             <span className="text-primary">RS {totalAmount}</span>
           </div>
