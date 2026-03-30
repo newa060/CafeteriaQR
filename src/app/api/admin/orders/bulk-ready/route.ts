@@ -27,12 +27,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
     }
 
-    // Find all active orders for this cafeteria that contain the item (case-insensitive, trimmed)
-    // We fetch EVERYTHING to be safe, then filter in memory to ensure we catch those that still need cooking
+    // Find all active orders for this cafeteria that contain the exact item name
+    // We use exact match to be consistent with the frontend's grouping (which is case-sensitive and preserves spaces).
     const activeOrders = await Order.find({
       cafeteriaId,
       status: { $in: ["accepted", "preparing"] },
-      "items.name": { $regex: new RegExp(`^${itemName.trim()}$`, 'i') }
+      "items.name": itemName
     }).sort({ createdAt: 1 });
 
     let remainingToReady = quantity;
@@ -45,7 +45,8 @@ export async function POST(req: Request) {
 
       // Mutate items in-place to satisfy Mongoose's DocumentArray type
       order.items.forEach((item: any, idx: number) => {
-        if (item.name.trim().toLowerCase() === itemName.trim().toLowerCase()) {
+        // Use exact match here as well
+        if (item.name === itemName) {
           const cooked = item.cookedQuantity || 0;
           const needed = item.quantity - cooked;
 
