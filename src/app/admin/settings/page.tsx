@@ -134,6 +134,12 @@ export default function AdminSettingsPage() {
     setMessage("");
     setError("");
 
+    if (!name.trim()) {
+      setError("Cafeteria name is required");
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/admin/cafeteria", {
         method: "PATCH",

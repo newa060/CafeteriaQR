@@ -179,7 +179,8 @@ export default function CheckoutPage() {
     }
     
     // Validate mandatory payment details
-    if (!paymentName.trim() && !user?.name) {
+    // Validate mandatory payment details
+    if (!paymentName.trim()) {
       setError("Please enter your name or payment remarks");
       const el = document.getElementById("payment-name-input");
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -383,6 +384,7 @@ export default function CheckoutPage() {
                     placeholder="e.g. John Doe / Burger" 
                     value={paymentName}
                     onChange={(e) => setPaymentName(e.target.value)}
+                    required
                   />
                 </div>
 

@@ -95,6 +95,12 @@ export default function CustomerProfilePage() {
     setMessage("");
     setError("");
 
+    if (!name.trim()) {
+      setError("Name is required");
+      setUpdating(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/auth/me", {
         method: "PATCH",
