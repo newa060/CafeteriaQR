@@ -410,7 +410,6 @@ export default function AdminDashboard() {
                 <Card className="bg-[#111111] border-white/5 shadow-2xl">
                   <div className="p-5 md:p-8 border-b border-white/5">
                     <h3 className="text-xl md:text-2xl font-black text-white">What to Cook Now</h3>
-                    <p className="text-sm text-gray-500 mt-1">Tap + or − to set how many you've cooked, then press Done.</p>
                   </div>
                   <CardContent className="p-3 md:p-6">
                     <div className="flex flex-col gap-3">
