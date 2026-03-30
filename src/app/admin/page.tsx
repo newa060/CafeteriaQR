@@ -15,12 +15,15 @@ import {
   Pizza,
   ArrowRight,
   Eye,
-  X
+  X,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
+import { useNotification } from "@/context/NotificationContext";
+import { useRef } from "react";
 
 interface OrderItem {
   name: string;
@@ -46,13 +49,36 @@ export default function AdminDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
   const [rejectConfirmId, setRejectConfirmId] = useState<string | null>(null);
+  const { showNotification } = useNotification();
+  const notifiedOrderIds = useRef<Set<string>>(new Set());
+  const isFirstLoad = useRef(true);
 
   const fetchOrders = async () => {
     setIsRefreshing(true);
     try {
       const res = await fetch("/api/admin/orders");
       if (res.ok) {
-        const data = await res.json();
+        const data: Order[] = await res.json();
+        
+        // Handle notifications for new pending orders
+        if (isFirstLoad.current) {
+          // On first load, just record existing orders without notifying
+          const ids = new Set(data.map(o => o._id));
+          notifiedOrderIds.current = ids;
+          isFirstLoad.current = false;
+        } else {
+          data.forEach(order => {
+            if (order.status === "pending" && !notifiedOrderIds.current.has(order._id)) {
+              showNotification({
+                title: "New Order! 🔔",
+                message: `New order from ${order.customerName}`,
+                type: "info",
+              });
+              notifiedOrderIds.current.add(order._id);
+            }
+          });
+        }
+        
         setOrders(data);
       }
     } catch (err) {
@@ -85,9 +111,9 @@ export default function AdminDashboard() {
     }
   };
 
-  // 1. Kitchen View (Bulk Breakdown) - Now shows 'pending' orders so the chef knows what to cook
+  // 1. Kitchen View (Bulk Breakdown) - ONLY shows orders that have been ACCEPTED by admin
   const bulkBreakdown = orders
-    .filter(o => o.status === "pending" || o.status === "preparing")
+    .filter(o => o.status === "accepted" || o.status === "preparing")
     .reduce((acc: { [key: string]: { total: number; orders: any[] } }, order) => {
       order.items.forEach(item => {
         if (!acc[item.name]) {
@@ -106,7 +132,7 @@ export default function AdminDashboard() {
     }, {});
 
   const bulkTotals = orders
-    .filter(o => o.status === "pending" || o.status === "preparing")
+    .filter(o => o.status === "accepted" || o.status === "preparing")
     .reduce((acc: { [key: string]: number }, order) => {
       order.items.forEach(item => {
         acc[item.name] = (acc[item.name] || 0) + item.quantity;
@@ -140,7 +166,23 @@ export default function AdminDashboard() {
             <p className="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">Manage live orders and see what to cook.</p>
           </div>
           
-          <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl self-start md:self-auto max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
+          <div className="flex items-center gap-4 self-start md:self-auto">
+            <Button 
+              variant="outline" 
+              className="h-9 px-3 border-white/5 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-400 gap-2 rounded-xl"
+              onClick={() => {
+                showNotification({
+                  title: "Test Notification",
+                  message: "Your notifications are working!",
+                  type: "info"
+                });
+              }}
+            >
+              <Bell className="w-3.5 h-3.5 text-primary" />
+              Test Audio
+            </Button>
+            
+            <div className="flex items-center gap-2 sm:gap-3 bg-[#1a1a1a] p-1 rounded-2xl border border-white/5 shadow-2xl max-w-full overflow-x-auto scrollbar-hide no-scrollbar">
             <button 
               onClick={() => setActiveTab("individual")}
               className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
@@ -171,6 +213,7 @@ export default function AdminDashboard() {
             >
               History
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -200,9 +243,11 @@ export default function AdminDashboard() {
                         </div>
                         <Badge variant={
                           order.status === "pending" ? "warning" : 
-                          order.status === "ready" ? "default" : "destructive"
+                          (order.status === "ready" || order.status === "accepted" || order.status === "preparing") ? "default" : "destructive"
                         } className="px-3 py-1 rounded-lg">
-                          {order.status === "ready" ? "accepted" : order.status === "pending" ? "pending" : "rejected"}
+                          {order.status === "ready" ? "Ready" : 
+                           (order.status === "accepted" || order.status === "preparing") ? "Accepted" : 
+                           order.status === "pending" ? "Pending" : "Rejected"}
                         </Badge>
                       </div>
 
@@ -215,7 +260,10 @@ export default function AdminDashboard() {
                         {order.items.map((item, idx) => (
                           <div key={idx} className="flex items-center gap-2 text-gray-300">
                             <div className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
-                            <span className="text-sm font-medium">{item.name}</span>
+                            <span className="text-sm font-medium">
+                              <span className="text-primary font-bold mr-1">{item.quantity}x</span>
+                              {item.name}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -296,7 +344,7 @@ export default function AdminDashboard() {
                   </Card>
                   <Card className="bg-white/5 border-white/5 text-center py-5 md:py-8">
                     <p className="text-[9px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Live Orders</p>
-                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status === "pending" || o.status === "preparing").length}</p>
+                    <p className="text-3xl md:text-5xl font-black text-white">{orders.filter(o => o.status === "accepted" || o.status === "preparing").length}</p>
                   </Card>
                 </div>
 
@@ -306,33 +354,43 @@ export default function AdminDashboard() {
                     <h3 className="text-xl md:text-2xl font-black text-white">What to Cook Now</h3>
                     <p className="text-sm md:text-base text-gray-500 mt-1">Combined totals of all items currently ordered by students.</p>
                   </div>
-                  <CardContent className="p-4 md:p-8 space-y-3 md:space-y-4">
+                  <CardContent className="p-4 md:p-6 space-y-6">
                     {Object.entries(bulkBreakdown).map(([name, data]) => (
-                      <div key={name} className="flex flex-col bg-white/5 rounded-2xl border border-white/5 shadow-inner overflow-hidden">
-                        <div className="flex justify-between items-center p-4 md:p-5">
-                          <span className="text-base md:text-lg font-bold text-white tracking-tight">{name}</span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl md:text-3xl font-black text-primary">{String(data.total)}x</span>
+                      <div key={name} className="flex flex-col bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+                        {/* Header: Item Name and Total */}
+                        <div className="flex justify-between items-center p-5 md:p-7 bg-white/5 border-b border-white/5">
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Item To Prep</p>
+                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight">{name}</h3>
+                          </div>
+                          <div className="bg-primary/20 border border-primary/30 px-5 py-2 rounded-2xl">
+                            <span className="text-3xl md:text-5xl font-black text-primary italic">{String(data.total)}x</span>
                           </div>
                         </div>
                         
-                        <div className="bg-black/20 border-t border-white/5 p-4 space-y-3">
-                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Individual Orders</p>
-                          {data.orders.map((subOrder: any, idx: number) => (
-                            <div key={idx} className="flex items-center justify-between bg-white/5 rounded-xl p-3 border border-white/5">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-bold text-white">{subOrder.customerName}</span>
-                                <span className="text-[10px] font-medium text-gray-500">Qty: {subOrder.quantity} • {subOrder.timeSlot}</span>
+                        {/* Orders List */}
+                        <div className="p-4 md:p-6 bg-black/40">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            {data.orders.map((subOrder: any, idx: number) => (
+                              <div key={idx} className="flex items-center justify-between bg-zinc-800/50 rounded-2xl p-4 border border-white/5 hover:bg-zinc-800 transition-colors">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-primary" />
+                                    <span className="text-sm md:text-base font-black text-white">{subOrder.customerName}</span>
+                                  </div>
+                                  <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest pl-4">
+                                    Qty: {subOrder.quantity} • {subOrder.timeSlot}
+                                  </p>
+                                </div>
+                                <Button 
+                                  className="h-10 md:h-12 px-6 flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-green-600/20 whitespace-nowrap"
+                                  onClick={() => updateOrderStatus(subOrder.orderId, "ready")}
+                                >
+                                  Ready
+                                </Button>
                               </div>
-                              <Button 
-                                variant="outline"
-                                className="h-9 px-4 text-[10px] font-black uppercase text-green-500 border-green-500/20 hover:bg-green-500/10 rounded-lg"
-                                onClick={() => updateOrderStatus(subOrder.orderId, "accepted")}
-                              >
-                                Accept
-                              </Button>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       </div>
                     ))}

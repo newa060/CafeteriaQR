@@ -26,6 +26,7 @@ interface NotificationContextType {
   markAllAsRead: () => void;
   clearNotifications: () => void;
   removeNotification: (id: string) => void;
+  playSound: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -128,10 +129,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         orders.forEach(order => {
           if (!notifiedOrders.includes(order._id)) {
-            if (order.status === "accepted") {
+            if (order.status === "accepted" || order.status === "ready") {
               showNotificationRef.current({
-                title: "Order Accepted!",
-                message: "Your order has been accepted.",
+                title: order.status === "accepted" ? "Order Accepted!" : "Order Ready! 🍕",
+                message: order.status === "accepted" ? "Your order has been accepted." : "Your order is ready for pickup!",
                 type: "success",
               });
               newNotified.push(order._id);
@@ -184,7 +185,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       unreadCount, 
       markAllAsRead, 
       clearNotifications,
-      removeNotification
+      removeNotification,
+      playSound
     }}>
       {children}
 

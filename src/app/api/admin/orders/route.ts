@@ -3,6 +3,9 @@ import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
 import { getSession } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getAdminCafeteria() {
   const session = await getSession();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
