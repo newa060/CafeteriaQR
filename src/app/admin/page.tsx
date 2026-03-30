@@ -152,7 +152,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6 md:space-y-10 max-w-7xl pt-4 lg:pt-0">
+    <div className="space-y-6 md:space-y-10 max-w-7xl pt-4 lg:pt-0 px-4 sm:px-6 md:px-8">
       {/* Sticky Header Area */}
       <div className="sticky top-16 lg:top-[-32px] z-40 bg-[#0d0d0d]/95 backdrop-blur-xl -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2.5 sm:py-6 mb-12 md:mb-12 border-b border-white/5 shadow-2xl transition-all">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">

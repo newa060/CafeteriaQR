@@ -23,7 +23,7 @@ export default function RootLayout({
         <AuthProvider>
           <NotificationProvider>
             <div className="flex flex-col min-h-screen">
-              <main className="flex-1 overflow-x-hidden pt-4 pb-20 sm:pb-4 px-4 sm:px-6 md:px-8">
+              <main className="flex-1 overflow-x-hidden pb-20 sm:pb-4">
                 {children}
               </main>
             </div>
