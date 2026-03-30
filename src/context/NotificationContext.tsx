@@ -139,10 +139,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         orders.forEach(order => {
           if (!notifiedOrders.includes(order._id)) {
-            if (order.status === "accepted" || order.status === "ready") {
+            if (order.status === "accepted") {
               showNotificationRef.current({
-                title: order.status === "accepted" ? "Order Accepted!" : "Order Ready! 🍕",
-                message: order.status === "accepted" ? "Your order has been accepted." : "Your order is ready for pickup!",
+                title: "Order Accepted!",
+                message: "Your order has been accepted.",
                 type: "success",
                 role: "customer"
               });
