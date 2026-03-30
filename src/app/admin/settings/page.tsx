@@ -85,7 +85,7 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     const fetchCafeteria = async () => {
       try {
-        const res = await fetch("/api/admin/cafeteria");
+        const res = await fetch("/api/admin/cafeteria", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           if (data) {
