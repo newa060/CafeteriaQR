@@ -305,7 +305,7 @@ export default function CustomerMenuPage() {
 
       {/* Sticky Cart Button */}
       <AnimatePresence>
-        {cartCount > 0 && !(cafeteria && !cafeteria.isActive) && (
+        {cartCount > 0 && !(cafeteria && !cafeteria.isActive) && !isNotificationsOpen && (
           <motion.div 
             initial={{ y: 100 }}
             animate={{ y: 0 }}

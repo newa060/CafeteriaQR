@@ -50,7 +50,7 @@ export const NotificationSheet: React.FC<NotificationSheetProps> = ({ isOpen, on
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-zinc-950 border-l border-white/10 z-[101] flex flex-col shadow-2xl"
           >
             {/* Header */}
-            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-zinc-950/50 backdrop-blur-xl sticky top-0 z-10">
+            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-zinc-950 sticky top-0 z-20">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Bell className="w-6 h-6 text-primary" />
@@ -163,7 +163,7 @@ export const NotificationSheet: React.FC<NotificationSheetProps> = ({ isOpen, on
             </div>
 
             {/* Footer */}
-            <div className="p-6 bg-zinc-950 border-t border-white/5">
+            <div className="p-6 bg-zinc-950 border-t border-white/5 relative z-20">
               <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">
                 Powered by MenuQR
               </p>
