@@ -197,8 +197,8 @@ export default function MenuManagementPage() {
     <div className="space-y-8 max-w-7xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl sm:text-4xl font-black text-white leading-none">Menu Management</h1>
-          <p className="text-sm sm:text-base text-gray-500 font-medium mt-1">Add, edit, or remove items from your menu.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">Menu Management</h1>
+          <p className="text-[11px] sm:text-base text-gray-500 font-medium mt-1">Add, edit, or remove items from your menu.</p>
         </div>
         <Button 
           className="w-full sm:w-auto h-12 sm:h-14 px-8 rounded-2xl text-base sm:text-lg font-bold shadow-xl shadow-primary/20 flex justify-center items-center gap-3"
@@ -247,10 +247,10 @@ export default function MenuManagementPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-black text-white leading-tight truncate">{item.name}</h3>
-                    <p className="text-[11px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+                    <h3 className="text-[17px] sm:text-xl font-black text-white leading-snug truncate">{item.name}</h3>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>
                   </div>
-                  <span className="text-xl sm:text-2xl font-black text-primary shrink-0">RS {item.price}</span>
+                  <span className="text-lg sm:text-2xl font-black text-primary shrink-0">RS {item.price}</span>
                 </div>
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -311,7 +311,7 @@ export default function MenuManagementPage() {
             >
               <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
                 <div className="flex justify-between items-center mb-1">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white">{editingItem ? "Edit Item" : "Add Item"}</h2>
+                  <h2 className="text-xl sm:text-2xl font-black text-white">{editingItem ? "Edit Item" : "Add Item"}</h2>
                   <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="w-8 h-8 p-0">
                     <X className="w-5 h-5" />
                   </Button>

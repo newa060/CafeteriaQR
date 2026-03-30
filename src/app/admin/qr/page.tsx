@@ -61,9 +61,9 @@ export default function QRGenerationPage() {
 
   return (
     <div className="space-y-10 max-w-4xl mx-auto pb-20">
-      <div className="text-center md:text-left">
-        <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-none">Cafeteria QR Code</h1>
-        <p className="text-sm sm:text-base text-gray-500 font-medium mt-2">Generate and download your unique QR code for scan-to-order.</p>
+      <div className="text-center md:text-left px-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">Cafeteria QR Code</h1>
+        <p className="text-[11px] sm:text-base text-gray-500 font-medium mt-2">Generate and download your unique QR code for scan-to-order.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -98,7 +98,7 @@ export default function QRGenerationPage() {
               Your Menu Link
             </h3>
             <div className="relative">
-              <div className="bg-black/50 border border-white/5 rounded-2xl p-4 pr-12 text-gray-400 font-mono text-xs break-all leading-relaxed">
+              <div className="bg-black/50 border border-white/5 rounded-2xl p-4 pr-12 text-gray-400 font-mono text-[10px] break-all leading-relaxed">
                 {customerUrl}
               </div>
               <button 
@@ -123,29 +123,29 @@ export default function QRGenerationPage() {
 
           <div className="space-y-3">
             <Button 
-              className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 flex items-center gap-3"
+              className="w-full h-12 sm:h-14 rounded-2xl text-base sm:text-lg font-bold shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
               onClick={handleDownload}
             >
-              <Download className="w-5 h-5" />
+              <Download className="w-5 h-5 shrink-0" />
               Download PNG Image
             </Button>
             
             <div className="grid grid-cols-2 gap-3">
               <Button 
                 variant="outline" 
-                className="h-14 rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 text-gray-400 font-bold"
+                className="h-12 sm:h-14 rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 text-gray-400 font-bold text-sm sm:text-base px-2"
                 onClick={() => window.open(customerUrl, "_blank")}
               >
-                <ExternalLink className="w-5 h-5 mr-3" />
-                Open Link
+                <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-3" />
+                Open
               </Button>
               <Button 
                 variant="outline" 
-                className="h-14 rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 text-gray-400 font-bold"
+                className="h-12 sm:h-14 rounded-2xl border-white/5 bg-white/5 hover:bg-white/10 text-gray-400 font-bold text-sm sm:text-base px-2"
                 onClick={handleCopy}
               >
-                <Share2 className="w-5 h-5 mr-3" />
-                Share URL
+                <Share2 className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-3" />
+                Share
               </Button>
             </div>
           </div>

@@ -163,8 +163,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-10 max-w-4xl mx-auto pb-20">
       <div>
-        <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-none">Settings</h1>
-        <p className="text-sm sm:text-base text-gray-500 font-medium mt-2">Manage your cafeteria profile, payment logic, and operational hours.</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">Settings</h1>
+        <p className="text-[11px] sm:text-base text-gray-500 font-medium mt-2">Manage your cafeteria profile, payment logic, and operational hours.</p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
@@ -180,10 +180,10 @@ export default function AdminSettingsPage() {
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Cafeteria Name</label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Main High School Canteen" required />
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Canteen Code</label>
-                  <Input value={cafeteria?.canteenCode} disabled className="opacity-50 select-none bg-white/5 border-white/5" />
+                  <Input value={cafeteria?.canteenCode} disabled className="h-12 opacity-50 select-none bg-white/5 border-white/5" />
                   <p className="text-[10px] text-gray-600 mt-1 pl-1 italic">This code is unique and cannot be changed.</p>
                 </div>
                 <div className="space-y-2">
@@ -193,10 +193,10 @@ export default function AdminSettingsPage() {
                     onClick={() => setIsActive(!isActive)}
                     className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 flex items-center justify-between hover:bg-white/10 transition-colors group"
                   >
-                    <span className={`text-sm font-black uppercase tracking-widest ${isActive ? "text-green-500" : "text-red-500"}`}>
+                    <span className={`text-xs font-black uppercase tracking-widest ${isActive ? "text-green-500" : "text-red-500"}`}>
                       {isActive ? "Active" : "Inactive"}
                     </span>
-                    <div className={`w-3 h-3 rounded-full shadow-lg ${isActive ? "bg-green-500 shadow-green-500/50" : "bg-red-500 shadow-red-500/50"} transition-all duration-300`} />
+                    <div className={`w-3.5 h-3.5 rounded-full shadow-lg ${isActive ? "bg-green-500 shadow-green-500/50" : "bg-red-500 shadow-red-500/50"} transition-all duration-300`} />
                   </button>
                   <p className="text-[10px] text-gray-600 mt-1 pl-1 italic">Click to toggle your canteen's availability.</p>
                 </div>
@@ -272,31 +272,31 @@ export default function AdminSettingsPage() {
           <Card className="bg-[#111111] border-white/5 p-5 sm:p-6 shadow-2xl rounded-2xl">
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
-                <div className="flex-1 flex items-center justify-center sm:justify-start bg-white/5 border border-white/10 rounded-xl p-1 h-11">
+                <div className="flex-1 flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-1 h-12">
                   <select 
                     value={newSlotHour}
                     onChange={(e) => setNewSlotHour(e.target.value)}
-                    className="bg-transparent text-white font-bold px-3 outline-none appearance-none cursor-pointer text-sm"
+                    className="bg-transparent text-white font-black px-4 outline-none appearance-none cursor-pointer text-base sm:text-sm"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => (
-                      <option key={h} value={h.toString().padStart(2, '0')} className="bg-[#0a0a0a] text-white underline">{h.toString().padStart(2, '0')}</option>
+                      <option key={h} value={h.toString().padStart(2, '0')} className="bg-[#0a0a0a] text-white">{h.toString().padStart(2, '0')}</option>
                     ))}
                   </select>
                   <span className="text-gray-500 font-bold px-1">:</span>
                   <select 
                     value={newSlotMinute}
                     onChange={(e) => setNewSlotMinute(e.target.value)}
-                    className="bg-transparent text-white font-bold px-3 outline-none appearance-none cursor-pointer text-sm"
+                    className="bg-transparent text-white font-black px-4 outline-none appearance-none cursor-pointer text-base sm:text-sm"
                   >
                     {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
                       <option key={m} value={m} className="bg-[#0a0a0a] text-white">{m}</option>
                     ))}
                   </select>
-                  <div className="w-px h-5 bg-white/10 mx-1.5" />
+                  <div className="w-px h-6 bg-white/10 mx-2" />
                   <select 
                     value={newSlotPeriod}
                     onChange={(e) => setNewSlotPeriod(e.target.value)}
-                    className="bg-transparent text-primary font-bold px-3 outline-none appearance-none cursor-pointer text-sm"
+                    className="bg-transparent text-primary font-black px-4 outline-none appearance-none cursor-pointer text-base sm:text-sm"
                   >
                     <option value="AM" className="bg-[#0a0a0a] text-white uppercase">AM</option>
                     <option value="PM" className="bg-[#0a0a0a] text-white uppercase">PM</option>
