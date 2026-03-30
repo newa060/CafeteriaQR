@@ -73,6 +73,7 @@ export default function AdminDashboard() {
                 title: "New Order! 🔔",
                 message: `New order from ${order.customerName}`,
                 type: "info",
+                role: "admin",
               });
               notifiedOrderIds.current.add(order._id);
             }
@@ -191,7 +192,8 @@ export default function AdminDashboard() {
                 showNotification({
                   title: "Test Notification",
                   message: "Your notifications are working!",
-                  type: "info"
+                  type: "info",
+                  role: "admin",
                 });
               }}
             >

@@ -17,10 +17,11 @@ interface NotificationItem {
   type: "success" | "info" | "warning";
   timestamp: string;
   isRead: boolean;
+  role?: "admin" | "customer" | "superadmin";
 }
 
 interface NotificationContextType {
-  showNotification: (notif: Omit<NotificationItem, "id" | "timestamp" | "isRead">) => void;
+  showNotification: (notif: Omit<NotificationItem, "id" | "timestamp" | "isRead"> & { role?: "admin" | "customer" | "superadmin" }) => void;
   notifications: NotificationItem[];
   unreadCount: number;
   markAllAsRead: () => void;
@@ -57,6 +58,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     localStorage.setItem("customer_notifications", JSON.stringify(notifications));
   }, [notifications]);
 
+  // Clear active toasts when role changes to prevent crosstalk
+  useEffect(() => {
+    setActiveNotifications([]);
+  }, [user?.role]);
+
   // Preload sound once
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -77,7 +83,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   // Stable showNotification using functional state update — no stale closure
-  const showNotification = useCallback((notif: Omit<NotificationItem, "id" | "timestamp" | "isRead">) => {
+  const showNotification = useCallback((notif: Omit<NotificationItem, "id" | "timestamp" | "isRead"> & { role?: "admin" | "customer" | "superadmin" }) => {
+    // If a role is specified and it doesn't match current user role, don't show the TOAST
+    // But we might still want to record it in history if it's for this user.
+    if (notif.role && user?.role !== notif.role) return;
+
     const id = Math.random().toString(36).substr(2, 9);
     const newNotif: NotificationItem = {
       ...notif,
@@ -91,7 +101,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     playSound();
     setTimeout(() => dismiss(id), 5000);
-  }, [playSound, dismiss]);
+  }, [playSound, dismiss, user?.role]);
 
   // Use a ref to keep the latest showNotification stable inside setInterval
   const showNotificationRef = useRef(showNotification);
@@ -134,6 +144,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 title: order.status === "accepted" ? "Order Accepted!" : "Order Ready! 🍕",
                 message: order.status === "accepted" ? "Your order has been accepted." : "Your order is ready for pickup!",
                 type: "success",
+                role: "customer"
               });
               newNotified.push(order._id);
               hasNew = true;
@@ -142,6 +153,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 title: "Order Rejected",
                 message: "Your order receipt could not be verified.",
                 type: "warning",
+                role: "customer"
               });
               newNotified.push(order._id);
               hasNew = true;
