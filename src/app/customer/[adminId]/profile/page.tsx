@@ -393,19 +393,19 @@ export default function CustomerProfilePage() {
                           order.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
                         }`} />
                         <div className="flex-1 p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="space-y-0.5">
-                              <p className="text-[8px] font-black text-gray-500 uppercase tracking-tighter">
+                          <div className="flex justify-between items-start gap-2 mb-2">
+                            <div className="space-y-0.5 min-w-0 flex-1">
+                              <p className="text-[8px] font-black text-gray-500 uppercase tracking-tighter truncate">
                                 {new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
-                              <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                              <h4 className="font-bold text-sm text-white flex items-center gap-1.5 flex-wrap">
                                 Slot: {order.timeSlot}
                                 <Badge className={`h-4 px-1.5 text-[7px] font-black uppercase ${getStatusColor(order.status)} border-none`}>
                                   {order.status}
                                 </Badge>
                               </h4>
                             </div>
-                            <p className="text-md font-black text-primary">RS {order.totalAmount}</p>
+                            <p className="text-base sm:text-lg font-black text-primary whitespace-nowrap shrink-0 mt-0.5">RS {order.totalAmount}</p>
                           </div>
                           
                           <div className="flex flex-wrap gap-1.5">
@@ -507,19 +507,19 @@ export default function CustomerProfilePage() {
                         order.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
                       }`} />
                       <div className="flex-1 p-5">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                        <div className="flex justify-between items-start gap-3 mb-4">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest truncate">
                               {new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
                             </p>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <h4 className="text-lg font-black text-white">Slot {order.timeSlot}</h4>
                               <Badge className={`px-2 py-0.5 text-[9px] font-black uppercase ${getStatusColor(order.status)}`}>
                                 {order.status}
                               </Badge>
                             </div>
                           </div>
-                          <p className="text-2xl font-black text-primary">RS {order.totalAmount}</p>
+                          <p className="text-xl sm:text-2xl font-black text-primary whitespace-nowrap shrink-0 mt-0.5">RS {order.totalAmount}</p>
                         </div>
                         
                         <div className="flex flex-wrap gap-2">
