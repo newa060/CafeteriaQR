@@ -143,9 +143,21 @@ export default function CustomerMenuPage() {
 
   const handleBackNavigation = () => {
     if (cartCount > 0) {
+      setPendingUrl("/home");
       setShowExitConfirm(true);
     } else {
       router.push("/home");
+    }
+  };
+
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+
+  const confirmExit = (url: string) => {
+    if (cartCount > 0) {
+      setPendingUrl(url);
+      setShowExitConfirm(true);
+    } else {
+      router.push(url);
     }
   };
 
@@ -192,7 +204,7 @@ export default function CustomerMenuPage() {
             )}
           </button>
           <button 
-            onClick={() => router.push(`/customer/${adminId}/profile`)} 
+            onClick={() => confirmExit(`/customer/${adminId}/profile`)} 
             className="text-primary p-1 rounded-full hover:bg-white/5 transition-all"
           >
             <CircleUser className="w-7 h-7" />
@@ -386,13 +398,18 @@ export default function CustomerMenuPage() {
       {/* Exit Confirmation Modal */}
       <ConfirmationModal
         isOpen={showExitConfirm}
-        onClose={() => setShowExitConfirm(false)}
-        onConfirm={() => {
-          localStorage.removeItem("cart"); // Optional: clear cart storage if exists
-          router.push("/home");
+        onClose={() => {
+          setShowExitConfirm(false);
+          setPendingUrl(null);
         }}
-        title="Stop! You Have Delicious Items"
-        message="Your menu is full of great picks! Leaving now will discard your cart. Are you sure you want to exit?"
+        onConfirm={() => {
+          localStorage.removeItem("cart");
+          router.push(pendingUrl || "/home");
+        }}
+        title="Wait! Don't lose your delicious picks"
+        message="Your cart is full of tasty treats! If you leave now, they'll be cleared. Would you like to stay and finish your order?"
+        confirmText="Clear & Exit"
+        cancelText="Keep Shopping"
       />
     </div>
   );
