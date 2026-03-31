@@ -355,7 +355,7 @@ export default function CustomerProfilePage() {
                 disabled={isClearing || loadingOrders || orders.length === 0}
                 className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 h-8 px-2 rounded-lg"
               >
-                {isClearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+                {isClearing && <Loader2 className="w-3 h-3 animate-spin mr-1" />}
                 Clear All
               </Button>
               {orders.length > 3 && (
@@ -485,7 +485,7 @@ export default function CustomerProfilePage() {
                   disabled={isClearing || orders.length === 0}
                   className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 h-8 px-3 rounded-xl border border-red-500/10"
                 >
-                  {isClearing ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <Trash2 className="w-3 h-3 mr-1.5" />}
+                  {isClearing && <Loader2 className="w-3 h-3 animate-spin mr-1.5" />}
                   Clear History
                 </Button>
               </div>
