@@ -58,6 +58,7 @@ export default function AdminDashboard() {
   const [orderToReject, setOrderToReject] = useState<string | null>(null);
   const [bulkReadyQtys, setBulkReadyQtys] = useState<{ [key: string]: string }>({});
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
   const { showNotification } = useNotification();
   const notifiedOrderIds = useRef<Set<string>>(new Set());
   const isFirstLoad = useRef(true);
@@ -388,8 +389,26 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, scale: 1.02 }}
                 className="flex flex-col gap-4"
               >
+                <div className="relative mb-2">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input 
+                    placeholder="Search history by customer name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-12 h-14 bg-[#111111] border border-white/10 rounded-2xl text-white placeholder:text-gray-600 focus-visible:ring-primary focus-visible:border-primary shadow-xl font-medium"
+                  />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors p-1"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
                 {orders
-                  .filter(o => o.status === "accepted" || o.status === "preparing" || o.status === "ready" || o.status === "cancelled")
+                  .filter(o => (o.status === "accepted" || o.status === "preparing" || o.status === "ready" || o.status === "cancelled") && o.customerName.toLowerCase().includes(searchQuery.toLowerCase()))
                   .map((order) => {
                     const isExpanded = expandedOrders.has(order._id);
                     return (
@@ -468,11 +487,11 @@ export default function AdminDashboard() {
                     );
                   })}
 
-                {orders.filter(o => o.status !== "pending").length === 0 && (
+                {orders.filter(o => (o.status !== "pending") && o.customerName.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                   <div className="py-20 flex flex-col items-center justify-center text-gray-700">
                     <Pizza className="w-16 h-16 mb-4 opacity-10" />
                     <p className="text-xl font-bold italic opacity-30">
-                      No history found.
+                      {orders.filter(o => o.status !== "pending").length === 0 ? "No history found." : "No matching orders found."}
                     </p>
                   </div>
                 )}
