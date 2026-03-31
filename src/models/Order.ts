@@ -65,6 +65,9 @@ const OrderSchema = new Schema({
   },
 }, { timestamps: true });
 
+// TTL index to automatically remove the order after 24 hours (86400 seconds)
+OrderSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 });
+
 // In development, Next.js hot-reloading can cause models to be re-compiled multiple times
 // with old schemas. We delete the existing model if it exists to force a refresh.
 if (models && models.Order) {
