@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/context/AuthContext";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 
 interface MenuItem {
   _id: string;
@@ -65,6 +66,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   // Custom uploader states
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -139,6 +142,31 @@ export default function CheckoutPage() {
       setCustomTimeValue(`${h.toString().padStart(2, '0')}:${customMinute}`);
     }
   }, [customHour, customMinute, customPeriod, isCustomTime]);
+
+  // Intercept Browser Back Button
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.pushState({ noBack: true }, "");
+
+      const handlePopState = (event: PopStateEvent) => {
+        // Any back action from checkout should show the prompt
+        // as requested by the user.
+        window.history.pushState({ noBack: true }, "");
+        setPendingUrl("/home");
+        setShowExitConfirm(true);
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, [router]);
+
+  const confirmExit = (url: string) => {
+    setPendingUrl(url);
+    setShowExitConfirm(true);
+  };
 
   const cartItems = menuItems.filter(item => cart[item._id] > 0);
   const totalAmount = cartItems.reduce((acc, item) => acc + (item.price * cart[item._id]), 0);
@@ -246,7 +274,7 @@ export default function CheckoutPage() {
     <div className="pb-10 max-w-lg mx-auto bg-background text-white min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button variant="ghost" size="icon" onClick={() => confirmExit(`/customer/${adminId}/menu`)}>
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <h1 className="text-xl font-black uppercase tracking-widest text-primary">Checkout</h1>
@@ -469,6 +497,23 @@ export default function CheckoutPage() {
         <div className="h-px w-24 bg-white/10 mb-4" />
         <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Powered by MenuQR</p>
       </div>
+
+      {/* Exit Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showExitConfirm}
+        onClose={() => {
+          setShowExitConfirm(false);
+          setPendingUrl(null);
+        }}
+        onConfirm={() => {
+          localStorage.removeItem("cart");
+          router.push(pendingUrl || "/home");
+        }}
+        title="Wait! Don't lose your delicious picks"
+        message="Your cart is full of tasty treats! If you leave now, they'll be cleared. Would you like to stay and finish your order?"
+        confirmText="Clear & Exit"
+        cancelText="Keep Shopping"
+      />
     </div>
   );
 }

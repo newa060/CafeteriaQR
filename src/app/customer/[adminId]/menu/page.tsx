@@ -182,12 +182,6 @@ export default function CustomerMenuPage() {
       {/* Header - Sticky only on mobile if needed, but lets keep it standard */}
       <header className="p-4 sm:px-6 md:px-8 border-b border-white/5 flex items-center justify-between bg-background sticky top-0 z-[60]">
         <div className="flex items-center gap-3">
-          <button 
-            onClick={handleBackNavigation}
-            className="p-2 -ml-2 rounded-full hover:bg-white/5 transition-all text-gray-400 hover:text-white"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
           <Pizza className="w-6 h-6 text-primary" />
           <h1 className="text-xl font-bold tracking-tight">
             {cafeteria?.name || "Menu"}
