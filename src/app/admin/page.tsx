@@ -17,7 +17,8 @@ import {
   Eye,
   X,
   Bell,
-  Trash2
+  Trash2,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -56,9 +57,19 @@ export default function AdminDashboard() {
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const [orderToReject, setOrderToReject] = useState<string | null>(null);
   const [bulkReadyQtys, setBulkReadyQtys] = useState<{ [key: string]: string }>({});
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
   const { showNotification } = useNotification();
   const notifiedOrderIds = useRef<Set<string>>(new Set());
   const isFirstLoad = useRef(true);
+
+  const toggleOrder = (id: string) => {
+    setExpandedOrders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
+  };
 
   const fetchOrders = async () => {
     try {
@@ -286,20 +297,17 @@ export default function AdminDashboard() {
         {/* Main Dashboard Column */}
         <div className="space-y-6">
           <AnimatePresence mode="wait">
-            {activeTab === "individual" || activeTab === "history" ? (
+            {activeTab === "individual" ? (
               <motion.div 
-                key={activeTab}
+                key="individual"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.02 }}
                 className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
               >
                 {orders
-                  .filter(o => 
-                    activeTab === "individual" 
-                      ? o.status === "pending" 
-                      : (o.status === "accepted" || o.status === "preparing" || o.status === "ready" || o.status === "cancelled")
-                  ).map((order) => (
+                  .filter(o => o.status === "pending")
+                  .map((order) => (
                   <Card key={order._id} className="bg-[#111111] border-white/5 hover:border-primary/20 transition-all group shadow-2xl">
                     <CardContent className="p-5 sm:p-7 space-y-4 sm:space-y-6">
                       <div className="flex justify-between items-start">
@@ -307,12 +315,8 @@ export default function AdminDashboard() {
                           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Customer Name</p>
                           <h3 className="text-lg md:text-xl font-extrabold text-white truncate max-w-[150px]">{order.customerName}</h3>
                         </div>
-                        <Badge variant={
-                          order.status === "pending" ? "warning" : 
-                          order.status === "cancelled" ? "destructive" : "default"
-                        } className="px-2 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs">
-                          {order.status === "pending" ? "Pending" : 
-                           order.status === "cancelled" ? "Rejected" : "Accepted"}
+                        <Badge variant="warning" className="px-2 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs">
+                          Pending
                         </Badge>
                       </div>
 
@@ -334,63 +338,145 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="pt-2">
-                        {order.status === "pending" ? (
-                          <div className="flex flex-col gap-3 pt-2">
-                            {order.paymentScreenshotUrl ? (
-                              <Button 
-                                variant="outline"
-                                className="h-12 w-full rounded-xl border-white/10 hover:border-primary/50 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
-                                onClick={() => setSelectedScreenshot(order.paymentScreenshotUrl!)}
-                              >
-                                <Eye className="w-4 h-4 text-primary" />
-                                Verify Receipt
-                              </Button>
-                            ) : (
-                              <div className="h-12 w-full rounded-xl bg-white/5 border border-dashed border-white/10 flex items-center justify-center opacity-30 text-[10px] font-bold uppercase tracking-widest gap-2">
-                                <Eye className="w-4 h-4" />
-                                No Receipt
-                              </div>
-                            )}
-                            <div className="flex gap-2 sm:gap-3 w-full">
-                              <Button 
-                                variant="outline"
-                                className="w-[35%] h-11 sm:h-14 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl border-red-500/20 text-red-500 hover:bg-red-500/10 transition-all shadow-lg"
-                                onClick={() => setOrderToReject(order._id)}
-                              >
-                                Reject
-                              </Button>
-                              <Button 
-                                className="w-[65%] h-11 sm:h-14 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                                onClick={() => updateOrderStatus(order._id, "accepted")}
-                              >
-                                Accept Order
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="pt-4 border-t border-white/5">
+                        <div className="flex flex-col gap-3 pt-2">
+                          {order.paymentScreenshotUrl ? (
                             <Button 
                               variant="outline"
-                              className="w-full h-10 border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest gap-2"
-                              onClick={() => setOrderToDelete(order._id)}
+                              className="h-12 w-full rounded-xl border-white/10 hover:border-primary/50 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                              onClick={() => setSelectedScreenshot(order.paymentScreenshotUrl!)}
                             >
-                              <Trash2 className="w-3 h-3" />
-                              Delete Record
+                              <Eye className="w-4 h-4 text-primary" />
+                              Verify Receipt
+                            </Button>
+                          ) : (
+                            <div className="h-12 w-full rounded-xl bg-white/5 border border-dashed border-white/10 flex items-center justify-center opacity-30 text-[10px] font-bold uppercase tracking-widest gap-2">
+                              <Eye className="w-4 h-4" />
+                              No Receipt
+                            </div>
+                          )}
+                          <div className="flex gap-2 sm:gap-3 w-full">
+                            <Button 
+                              variant="outline"
+                              className="w-[35%] h-11 sm:h-14 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl border-red-500/20 text-red-500 hover:bg-red-500/10 transition-all shadow-lg"
+                              onClick={() => setOrderToReject(order._id)}
+                            >
+                              Reject
+                            </Button>
+                            <Button 
+                              className="w-[65%] h-11 sm:h-14 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                              onClick={() => updateOrderStatus(order._id, "accepted")}
+                            >
+                              Accept Order
                             </Button>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
 
-                {orders.filter(o => 
-                  activeTab === "individual" ? o.status === "pending" : (o.status !== "pending")
-                ).length === 0 && (
+                {orders.filter(o => o.status === "pending").length === 0 && (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-700">
                     <Pizza className="w-16 h-16 mb-4 opacity-10" />
                     <p className="text-xl font-bold italic opacity-30">
-                      {activeTab === "individual" ? "No pending orders." : "No history found."}
+                      No pending orders.
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            ) : activeTab === "history" ? (
+              <motion.div 
+                key="history"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="flex flex-col gap-4"
+              >
+                {orders
+                  .filter(o => o.status === "accepted" || o.status === "preparing" || o.status === "ready" || o.status === "cancelled")
+                  .map((order) => {
+                    const isExpanded = expandedOrders.has(order._id);
+                    return (
+                      <Card key={order._id} className="bg-[#111111] border-white/5 overflow-hidden transition-all group shadow-sm hover:border-white/20">
+                        {/* Compact Header */}
+                        <div 
+                          className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] transition-colors"
+                          onClick={() => toggleOrder(order._id)}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex flex-col">
+                              <h3 className="text-base font-bold text-white truncate max-w-[150px]">{order.customerName}</h3>
+                              <p className="text-xs font-black text-primary mt-1">{order.timeSlot}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <Badge variant={
+                              order.status === "cancelled" ? "destructive" : "default"
+                            } className="px-2 py-1 rounded-md text-[10px]">
+                              {order.status === "cancelled" ? "Rejected" : "Accepted"}
+                            </Badge>
+                            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          </div>
+                        </div>
+
+                        {/* Expanded Content */}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div 
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="border-t border-white/5 bg-black/20"
+                            >
+                              <div className="p-4 space-y-4">
+                                {/* Order Items */}
+                                <div className="space-y-2">
+                                  {order.items.map((item, idx) => (
+                                    <div key={idx} className="flex items-center gap-2 text-gray-300">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
+                                      <span className="text-sm font-medium">
+                                        <span className="text-primary font-bold mr-1">{item.quantity}x</span>
+                                        {item.name}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
+                                  {order.paymentScreenshotUrl && (
+                                    <Button 
+                                      variant="outline"
+                                      className="h-10 w-full rounded-xl border-white/10 hover:border-primary/50 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all mt-2"
+                                      onClick={() => setSelectedScreenshot(order.paymentScreenshotUrl!)}
+                                    >
+                                      <Eye className="w-3.5 h-3.5 text-primary" />
+                                      View Receipt
+                                    </Button>
+                                  )}
+                                  <Button 
+                                    variant="outline"
+                                    className="w-full h-10 border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest gap-2 mt-2"
+                                    onClick={() => setOrderToDelete(order._id)}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Delete Record
+                                  </Button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </Card>
+                    );
+                  })}
+
+                {orders.filter(o => o.status !== "pending").length === 0 && (
+                  <div className="py-20 flex flex-col items-center justify-center text-gray-700">
+                    <Pizza className="w-16 h-16 mb-4 opacity-10" />
+                    <p className="text-xl font-bold italic opacity-30">
+                      No history found.
                     </p>
                   </div>
                 )}
