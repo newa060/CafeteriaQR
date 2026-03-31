@@ -61,10 +61,17 @@ export default function CustomerMenuPage() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 50);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -207,7 +214,7 @@ export default function CustomerMenuPage() {
         </div>
 
         {/* Category Bar - Sticky */}
-        <div className="sticky top-[72px] z-50 -mx-4 px-4 bg-background/95 backdrop-blur-md border-b border-white/5 py-4 mb-6">
+        <div className="sticky top-[72px] z-50 -mx-4 px-4 bg-background border-b border-white/5 py-4 mb-6">
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {categories.map((cat) => (
               <Button
@@ -244,10 +251,12 @@ export default function CustomerMenuPage() {
               onClick={() => cafeteria?.isActive && setSelectedItem(item)}
             >
               {/* Image - Left Side */}
-              <div className="w-28 sm:w-32 h-full relative shrink-0">
+              <div className="w-28 sm:w-32 h-full relative shrink-0 overflow-hidden">
                 <img 
                   src={item.imageUrl || "/placeholder.png"} 
                   alt={item.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 {!item.isAvailable && (
