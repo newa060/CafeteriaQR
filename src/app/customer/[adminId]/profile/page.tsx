@@ -488,9 +488,6 @@ export default function CustomerProfilePage() {
                   {isClearing ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <Trash2 className="w-3 h-3 mr-1.5" />}
                   Clear History
                 </Button>
-                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-white/10">
-                  {orders.length} Total
-                </Badge>
               </div>
             </header>
 
