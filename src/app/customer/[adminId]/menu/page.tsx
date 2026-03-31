@@ -23,6 +23,7 @@ import { useNotification } from "@/context/NotificationContext";
 import { NotificationSheet } from "@/components/NotificationSheet";
 import { MenuSkeleton } from "@/components/MenuSkeleton";
 import { ItemDetailsModal } from "@/components/ItemDetailsModal";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 
 interface MenuItem {
   _id: string;
@@ -58,6 +59,7 @@ export default function CustomerMenuPage() {
   const { unreadCount, markAllAsRead } = useNotification();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -78,7 +80,6 @@ export default function CustomerMenuPage() {
       }
     };
 
-    if (adminId) fetchMenu();
   }, [adminId]);
 
   const filteredItems = menuItems.filter(item => {
@@ -110,6 +111,36 @@ export default function CustomerMenuPage() {
   const getItemQuantity = (id: string) => cart[id] || 0;
   const cartCount = Object.values(cart).reduce((acc, curr) => acc + curr, 0);
 
+  // Intercept Browser Back Button
+  useEffect(() => {
+    // Push a dummy state so we can catch the back button
+    if (typeof window !== "undefined") {
+      window.history.pushState({ noBack: true }, "");
+
+      const handlePopState = (event: PopStateEvent) => {
+        if (cartCount > 0) {
+          // Prevent back navigation and show confirmation
+          window.history.pushState({ noBack: true }, "");
+          setShowExitConfirm(true);
+        } else {
+          // If cart is empty, redirect to home as requested
+          router.push("/home");
+        }
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }
+  }, [cartCount, router]);
+
+  const handleBackNavigation = () => {
+    if (cartCount > 0) {
+      setShowExitConfirm(true);
+    } else {
+      router.push("/home");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-20 px-4 pt-4">
@@ -131,6 +162,12 @@ export default function CustomerMenuPage() {
       {/* Header - Sticky only on mobile if needed, but lets keep it standard */}
       <header className="p-4 sm:px-6 md:px-8 border-b border-white/5 flex items-center justify-between bg-background sticky top-0 z-[60]">
         <div className="flex items-center gap-3">
+          <button 
+            onClick={handleBackNavigation}
+            className="p-2 -ml-2 rounded-full hover:bg-white/5 transition-all text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <Pizza className="w-6 h-6 text-primary" />
           <h1 className="text-xl font-bold tracking-tight">
             {cafeteria?.name || "Menu"}
@@ -337,6 +374,18 @@ export default function CustomerMenuPage() {
       <footer className="p-8 mt-12 border-t border-white/5 opacity-20 text-center">
         <p className="text-[10px] font-black uppercase tracking-[0.3em]">MenuQR Powered</p>
       </footer>
+
+      {/* Exit Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showExitConfirm}
+        onClose={() => setShowExitConfirm(false)}
+        onConfirm={() => {
+          localStorage.removeItem("cart"); // Optional: clear cart storage if exists
+          router.push("/home");
+        }}
+        title="Stop! You Have Delicious Items"
+        message="Your menu is full of great picks! Leaving now will discard your cart. Are you sure you want to exit?"
+      />
     </div>
   );
 }
