@@ -235,10 +235,6 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between gap-4 mb-1 sm:mb-2">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <h1 className="text-[20px] sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-none truncate">Dashboard</h1>
-                <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full animate-pulse shrink-0">
-                  <div className="w-1 h-1 rounded-full bg-green-500" />
-                  <span className="text-[8px] sm:text-[9px] font-bold text-green-500 uppercase tracking-widest leading-none">Live</span>
-                </div>
               </div>
             </div>
 
