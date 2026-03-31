@@ -41,6 +41,9 @@ export default function MenuManagementPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
   
+  // Discard confirmation state
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
+  
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -128,6 +131,28 @@ export default function MenuManagementPage() {
     }
     setIsModalOpen(true);
     setError("");
+  };
+
+  const isDirty = () => {
+    if (editingItem) {
+      return (
+        formData.name !== editingItem.name ||
+        formData.description !== (editingItem.description || "") ||
+        formData.price !== editingItem.price.toString() ||
+        formData.category !== editingItem.category ||
+        formData.imageUrl !== (editingItem.imageUrl || "") ||
+        formData.isAvailable !== editingItem.isAvailable
+      );
+    }
+    return !!(formData.name || formData.description || formData.price || formData.category || formData.imageUrl);
+  };
+
+  const handleCloseModalRequest = () => {
+    if (isDirty()) {
+      setIsDiscardModalOpen(true);
+    } else {
+      setIsModalOpen(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -315,7 +340,7 @@ export default function MenuManagementPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/80 backdrop-blur-lg"
-              onClick={() => setIsModalOpen(false)}
+              onClick={handleCloseModalRequest}
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -326,7 +351,7 @@ export default function MenuManagementPage() {
               <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
                 <div className="flex justify-between items-center mb-1">
                   <h2 className="text-xl sm:text-2xl font-black text-white">{editingItem ? "Edit Item" : "Add Item"}</h2>
-                  <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="w-8 h-8 p-0">
+                  <Button variant="ghost" size="icon" onClick={handleCloseModalRequest} className="w-8 h-8 p-0">
                     <X className="w-5 h-5" />
                   </Button>
                 </div>
@@ -477,6 +502,61 @@ export default function MenuManagementPage() {
                     className="h-14 rounded-2xl text-xs font-black uppercase tracking-widest bg-red-500 hover:bg-red-600 text-white shadow-xl shadow-red-500/20"
                   >
                     Confirm Delete
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Discard Changes Confirmation Modal */}
+      <AnimatePresence>
+        {isDiscardModalOpen && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+              onClick={() => setIsDiscardModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-sm bg-[#0a0a0a] border border-amber-500/20 rounded-[2.5rem] p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+              
+              <div className="text-center space-y-6">
+                <div className="w-20 h-20 bg-amber-500/10 rounded-3xl border border-amber-500/20 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/10 rotate-3">
+                  <AlertCircle className="w-10 h-10 text-amber-500" />
+                </div>
+                
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-black text-white tracking-tight">Discard changes?</h2>
+                  <p className="text-sm text-gray-400 leading-relaxed px-4">
+                    You have unsaved changes. Are you sure you want to discard them?
+                  </p>
+                </div>
+                
+                <div className="flex flex-col gap-3 mt-8">
+                  <Button 
+                    onClick={() => {
+                      setIsDiscardModalOpen(false);
+                      setIsModalOpen(false);
+                    }}
+                    className="h-14 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-black text-lg shadow-xl shadow-amber-600/30 active:scale-95 transition-all"
+                  >
+                    Discard Changes
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setIsDiscardModalOpen(false)}
+                    className="h-12 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 font-bold transition-colors"
+                  >
+                    Keep Editing
                   </Button>
                 </div>
               </div>
