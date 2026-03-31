@@ -80,6 +80,7 @@ export default function CustomerMenuPage() {
       }
     };
 
+    if (adminId) fetchMenu();
   }, [adminId]);
 
   const filteredItems = menuItems.filter(item => {
@@ -110,28 +111,35 @@ export default function CustomerMenuPage() {
 
   const getItemQuantity = (id: string) => cart[id] || 0;
   const cartCount = Object.values(cart).reduce((acc, curr) => acc + curr, 0);
+  const cartCountRef = React.useRef(cartCount);
+  
+  useEffect(() => {
+    cartCountRef.current = cartCount;
+  }, [cartCount]);
 
   // Intercept Browser Back Button
   useEffect(() => {
-    // Push a dummy state so we can catch the back button
     if (typeof window !== "undefined") {
+      // Push a dummy state ONCE on mount
       window.history.pushState({ noBack: true }, "");
 
       const handlePopState = (event: PopStateEvent) => {
-        if (cartCount > 0) {
-          // Prevent back navigation and show confirmation
+        if (cartCountRef.current > 0) {
+          // If items in cart, block and show modal
           window.history.pushState({ noBack: true }, "");
           setShowExitConfirm(true);
         } else {
-          // If cart is empty, redirect to home as requested
+          // If empty, proceed to home
           router.push("/home");
         }
       };
 
       window.addEventListener("popstate", handlePopState);
-      return () => window.removeEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
     }
-  }, [cartCount, router]);
+  }, [router]); // Only run once on mount (and if router changes, which it doesn't)
 
   const handleBackNavigation = () => {
     if (cartCount > 0) {
