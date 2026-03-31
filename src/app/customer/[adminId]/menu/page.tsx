@@ -57,23 +57,7 @@ export default function CustomerMenuPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { unreadCount, markAllAsRead } = useNotification();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-
-  useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          setIsScrolled(window.scrollY > 50);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -145,11 +129,11 @@ export default function CustomerMenuPage() {
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* Header - Sticky only on mobile if needed, but lets keep it standard */}
-      <header className="p-4 sm:px-6 md:px-8 border-b border-white/5 flex items-center justify-between bg-background/80 backdrop-blur-md sticky top-0 z-[60]">
+      <header className="p-4 sm:px-6 md:px-8 border-b border-white/5 flex items-center justify-between bg-background sticky top-0 z-[60]">
         <div className="flex items-center gap-3">
           <Pizza className="w-6 h-6 text-primary" />
           <h1 className="text-xl font-bold tracking-tight">
-            {isScrolled ? cafeteria?.name : "Menu"}
+            {cafeteria?.name || "Menu"}
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -190,17 +174,13 @@ export default function CustomerMenuPage() {
       />
 
       <main className="px-4 sm:px-6 md:px-8 pt-6">
-        {/* Hero Section - Fades out on scroll */}
-        <motion.div 
-          initial={{ opacity: 1 }}
-          animate={{ opacity: isScrolled ? 0 : 1, height: isScrolled ? 0 : "auto" }}
-          className="mb-8"
-        >
+        {/* Hero Section */}
+        <div className="mb-8">
           <h2 className="text-4xl font-black tracking-tighter mb-2">
             {cafeteria?.name || "Cafeteria"}
           </h2>
           <p className="text-gray-500 font-medium">Delicious meals pre-prepared for you.</p>
-        </motion.div>
+        </div>
 
         {/* Search */}
         <div className="relative mb-6">
@@ -245,7 +225,7 @@ export default function CustomerMenuPage() {
           {filteredItems.map((item) => (
             <div
               key={item._id}
-              className={`group relative bg-card border border-white/5 rounded-2xl overflow-hidden hover:border-primary/30 transition-all flex h-32 cursor-pointer ${
+              className={`group relative bg-card border border-white/5 rounded-2xl overflow-hidden hover:border-primary/30 transition-colors flex h-32 cursor-pointer ${
                 !item.isAvailable || !cafeteria?.isActive ? "grayscale opacity-60" : ""
               }`}
               onClick={() => cafeteria?.isActive && setSelectedItem(item)}
