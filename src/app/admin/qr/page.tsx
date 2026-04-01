@@ -21,6 +21,22 @@ export default function QRGenerationPage() {
   const { user } = useAuth();
   const qrRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = React.useState(false);
+  const [cafeteriaName, setCafeteriaName] = React.useState<string>("");
+
+  React.useEffect(() => {
+    const fetchCafeteria = async () => {
+      try {
+        const res = await fetch("/api/admin/cafeteria");
+        if (res.ok) {
+          const data = await res.json();
+          setCafeteriaName(data.name);
+        }
+      } catch (err) {
+        console.error("Failed to fetch cafeteria name:", err);
+      }
+    };
+    fetchCafeteria();
+  }, []);
 
   // The base URL for the customer menu
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
@@ -50,7 +66,8 @@ export default function QRGenerationPage() {
         ctx.drawImage(img, 20, 20);
         const pngFile = canvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
-        downloadLink.download = `MenuQR_QR_${user?.name?.replace(/\s+/g, '_')}.png`;
+        const fileName = (cafeteriaName || user?.name || "Cafeteria").replace(/\s+/g, '_');
+        downloadLink.download = `MenuQR_QR_${fileName}.png`;
         downloadLink.href = pngFile;
         downloadLink.click();
       }
@@ -84,7 +101,7 @@ export default function QRGenerationPage() {
               </div>
               <div className="mt-8 text-center text-black">
                 <p className="font-extrabold text-lg uppercase tracking-tight">Scan to Pre-Order</p>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{user?.name || "Cafeteria Admin"}</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{cafeteriaName || "Your Cafeteria"}</p>
               </div>
             </Card>
           </motion.div>
