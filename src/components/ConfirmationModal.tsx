@@ -13,6 +13,7 @@ interface ConfirmationModalProps {
   message?: string;
   confirmText?: string;
   cancelText?: string;
+  icon?: React.ElementType;
 }
 
 export function ConfirmationModal({
@@ -23,6 +24,7 @@ export function ConfirmationModal({
   message = "You have delicious items in your cart. If you leave now, they will be discarded. Are you sure you want to exit?",
   confirmText = "Discard & Exit",
   cancelText = "Keep Shopping",
+  icon: Icon = ShoppingCart,
 }: ConfirmationModalProps) {
   return (
     <AnimatePresence>
@@ -49,7 +51,7 @@ export function ConfirmationModal({
               
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-2">
-                  <ShoppingCart className="w-8 h-8" />
+                  <Icon className="w-8 h-8" />
                 </div>
                 
                 <h3 className="text-xl font-bold text-white tracking-tight leading-tight">
