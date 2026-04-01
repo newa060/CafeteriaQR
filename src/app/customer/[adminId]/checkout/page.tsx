@@ -152,7 +152,7 @@ export default function CheckoutPage() {
         // Any back action from checkout should show the prompt
         // as requested by the user.
         window.history.pushState({ noBack: true }, "");
-        setPendingUrl("/home");
+        setPendingUrl(`/customer/${adminId}/menu`);
         setShowExitConfirm(true);
       };
 
@@ -507,7 +507,7 @@ export default function CheckoutPage() {
         }}
         onConfirm={() => {
           localStorage.removeItem("cart");
-          router.push(pendingUrl || "/home");
+          router.push(pendingUrl || `/customer/${adminId}/menu`);
         }}
         title="Wait! Don't lose your delicious picks"
         message="Your cart is full of tasty treats! If you leave now, they'll be cleared. Would you like to stay and finish your order?"

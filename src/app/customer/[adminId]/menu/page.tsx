@@ -125,12 +125,13 @@ export default function CustomerMenuPage() {
 
       const handlePopState = (event: PopStateEvent) => {
         if (cartCountRef.current > 0) {
-          // If items in cart, block and show modal
+          // Block and show modal if items are in cart
           window.history.pushState({ noBack: true }, "");
+          setPendingUrl(null); // Stay on menu
           setShowExitConfirm(true);
         } else {
-          // If empty, proceed to home
-          router.push("/home");
+          // If empty, stay on menu but handle the back state
+          window.history.pushState({ noBack: true }, "");
         }
       };
 
@@ -143,10 +144,8 @@ export default function CustomerMenuPage() {
 
   const handleBackNavigation = () => {
     if (cartCount > 0) {
-      setPendingUrl("/home");
+      setPendingUrl(null);
       setShowExitConfirm(true);
-    } else {
-      router.push("/home");
     }
   };
 
@@ -398,7 +397,9 @@ export default function CustomerMenuPage() {
         }}
         onConfirm={() => {
           localStorage.removeItem("cart");
-          router.push(pendingUrl || "/home");
+          setCart({});
+          setShowExitConfirm(false);
+          if (pendingUrl) router.push(pendingUrl);
         }}
         title="Wait! Don't lose your delicious picks"
         message="Your cart is full of tasty treats! If you leave now, they'll be cleared. Would you like to stay and finish your order?"
