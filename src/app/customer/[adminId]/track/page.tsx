@@ -50,38 +50,14 @@ export default function OrderTrackPage() {
   const { unreadCount, markAllAsRead } = useNotification();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // Synthesized notification sound (avoids external asset blocking)
-  const playNotificationSound = (type: "success" | "error") => {
+  // Notification sound playback
+  const playNotificationSound = () => {
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioContext();
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      if (type === "success") {
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(880, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-      } else {
-        osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(150, ctx.currentTime);
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-      }
-
-      osc.start();
-      osc.stop(ctx.currentTime + 0.5);
+      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2870/2870.wav");
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
     } catch (e) {
-      console.error("Audio Context failed", e);
+      console.error("Audio playback failed", e);
     }
   };
 
@@ -89,10 +65,10 @@ export default function OrderTrackPage() {
     if (order && previousStatus.current && previousStatus.current !== order.status) {
       if (order.status === "accepted" || order.status === "ready") {
         if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
-        playNotificationSound("success");
+        playNotificationSound();
       } else if (order.status === "cancelled") {
         if ("vibrate" in navigator) navigator.vibrate([300, 100, 300, 100, 300]);
-        playNotificationSound("error");
+        playNotificationSound();
       }
     }
     if (order) {

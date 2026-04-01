@@ -80,7 +80,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Preload sound once
   useEffect(() => {
     if (typeof window !== "undefined") {
-      audioRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3");
+      audioRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2870/2870.wav");
       audioRef.current.volume = 0.6;
     }
   }, []);
