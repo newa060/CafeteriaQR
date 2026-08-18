@@ -63,7 +63,7 @@ export async function PATCH(req: Request) {
     const updatedOrder = await Order.findOneAndUpdate(
       { _id: id, cafeteriaId },
       { $set: update },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!updatedOrder) {

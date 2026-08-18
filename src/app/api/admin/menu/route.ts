@@ -78,7 +78,7 @@ export async function PUT(req: Request) {
     const updatedItem = await MenuItem.findOneAndUpdate(
       { _id: id, cafeteriaId },
       updateData,
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!updatedItem) {

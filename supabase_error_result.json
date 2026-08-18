@@ -1,0 +1,9 @@
+{
+  "status": 500,
+  "body": {
+    "code": 500,
+    "error_code": "unexpected_failure",
+    "msg": "Error sending magic link email",
+    "error_id": "9e6a510530e2249a-KTM"
+  }
+}
